@@ -6,11 +6,11 @@ public class PlayerController : MonoBehaviour
     // Movement
     [SerializeField] private float _movementMultiplier;
     [SerializeField] private Camera _playerCamera;
+    [SerializeField] private Transform _cameraRig;
     [SerializeField] private Transform _projectile;
 
     private Rigidbody _player;
     private float _distToGround;
-    private bool _isMovingHorizontally = false;
 
     // Auto-Attack
     [Range(1f, 100f)] [SerializeField] private float _timeBetweenAutoAttacksMs;
@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         PerformHorizontalMovement();
-        RotatePlayerToFaceMouse();
+        LookAtMouse();
         LeftClick();
     }
 
@@ -37,7 +37,6 @@ public class PlayerController : MonoBehaviour
         if (moveHorizontal == 0 && moveVertical == 0)
         {
             _player.velocity = new Vector3(0f, _player.velocity.y, 0f);
-            _isMovingHorizontally = false;
         }
         else
         {
@@ -50,42 +49,25 @@ public class PlayerController : MonoBehaviour
                                    moveVertical * multiplier);
 
             _player.velocity = movement;
-            _isMovingHorizontally = true;
         }
     }
 
-    public void RotatePlayerToFaceMouse()
+    public void LookAtMouse()
     {
-        //Ray camRay = _playerCamera.ScreenPointToRay(Input.mousePosition);
-
-        //RaycastHit floorHit;
-        //// Perform the raycast and if it hits something on the floor layer...
-        //if (Physics.Raycast(camRay, out floorHit, 100f))
-        //{
-        //    // Create a vector from the player to the point on the floor the raycast from the mouse hit.
-        //    Vector3 playerToMouse = floorHit.point - transform.position;
-
-        //    // Ensure the vector is horizontal to the player
-        //    playerToMouse.y = transform.position.y;
-
-        //    Debug.Log(playerToMouse);
-        //    transform.LookAt(playerToMouse);
-        //    //Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
-        //}
-
-        ////var mouseX = Input.GetAxis("Mouse X");
-        ////var mouseY = Input.GetAxis("Mouse Y");
         var mouse = Input.mousePosition;
-        var mouseWorldPoint = _playerCamera.ScreenToWorldPoint(new Vector3(mouse.x, mouse.y, _playerCamera.transform.position.y));
-        
-        //var camera = CameraRig.GetComponentInChildren<Camera>(false);
-        //var mouseWorldPoint = camera.ScreenToWorldPoint(new Vector3(mouse.x, mouse.y, transform.position.y));
-        ////var forward = mouseWorldPoint - transform.position;
+        var playerCamera = _cameraRig.GetComponentInChildren<Camera>();
 
-        //// Rotate player to face the direction of movement
-        transform.LookAt(new Vector3(mouseWorldPoint.x, transform.position.y, mouseWorldPoint.z));
-        //Debug.Log(mouseWorldPoint);
-        ////transform.forward = Vector3.Lerp(transform.forward, new Vector3(mouseX, 0f, mouseY), 10 * Time.deltaTime);
+        Ray camRay = playerCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit floorHit;
+
+        Debug.DrawRay(camRay.origin, camRay.direction * 100, Color.yellow);
+
+        if (Physics.Raycast(camRay, out floorHit, 200f, LayerMask.GetMask("Floor")))
+        {
+            Debug.DrawLine(floorHit.point, floorHit.point + new Vector3(1, 1, 1));
+            Debug.DrawLine(floorHit.point, floorHit.point + new Vector3(-1, 1, -1));
+            transform.LookAt(new Vector3(floorHit.point.x, transform.position.y, floorHit.point.z));
+        }
     }
 
     public void LeftClick()

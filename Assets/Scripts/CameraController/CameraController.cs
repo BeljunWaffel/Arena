@@ -5,6 +5,8 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Transform _targetObject;    // The object to follow
     [SerializeField] private int _cameraMoveSpeed;
 
+    private Transform _camera;
+
     void Start()
     {
         if (!_targetObject)
@@ -12,6 +14,9 @@ public class CameraController : MonoBehaviour
             Debug.Log("No Target Object has been set for the player camera");
             return;
         }
+
+        // Camera
+        _camera = GetComponentInChildren<Camera>().transform;
     }
 
     private void FixedUpdate()
@@ -27,7 +32,6 @@ public class CameraController : MonoBehaviour
         }
 
         // Move the rig towards target position.
-        var newCameraPos = Vector3.Lerp(transform.position, _targetObject.position, deltaTime * _cameraMoveSpeed);
-        transform.position = new Vector3(newCameraPos.x, transform.position.y, newCameraPos.z);
+        transform.position = Vector3.Lerp(transform.position, _targetObject.position, deltaTime * _cameraMoveSpeed);
     }
 }
