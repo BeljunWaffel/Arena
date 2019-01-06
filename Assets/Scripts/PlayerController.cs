@@ -25,9 +25,8 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         PerformHorizontalMovement();
-        AutoAttack();
-        //PerformVerticalMovement();
-        //FireProjectile();
+        RotatePlayerToFaceMouse();
+        LeftClick();
     }
 
     private void PerformHorizontalMovement()
@@ -50,18 +49,46 @@ public class PlayerController : MonoBehaviour
                                    _player.velocity.y,
                                    moveVertical * multiplier);
 
-            // Rotate player to face the direction of movement
-            transform.forward = Vector3.Lerp(transform.forward, new Vector3(movement.x, 0f, movement.z), 10 * Time.deltaTime);
-
-            // Rotate player to face the direction of movement
-            //transform.forward = Vector3.Lerp(transform.forward, new Vector3(movement.x, 0f, movement.z), 10 * Time.deltaTime);
-
             _player.velocity = movement;
             _isMovingHorizontally = true;
         }
     }
 
-    public void AutoAttack()
+    public void RotatePlayerToFaceMouse()
+    {
+        var camera = CameraRig.GetComponentInChildren<Camera>(false);
+        Ray camRay = camera.ScreenPointToRay(Input.mousePosition);
+
+        RaycastHit floorHit;
+        // Perform the raycast and if it hits something on the floor layer...
+        if (Physics.Raycast(camRay, out floorHit, 100f))
+        {
+            // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+            Vector3 playerToMouse = floorHit.point - transform.position;
+
+            // Ensure the vector is horizontal to the player
+            playerToMouse.y = transform.position.y;
+
+            Debug.Log(playerToMouse);
+            transform.LookAt(playerToMouse);
+            //Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
+        }
+
+        ////var mouseX = Input.GetAxis("Mouse X");
+        ////var mouseY = Input.GetAxis("Mouse Y");
+        //var mouse = Input.mousePosition;
+        
+        //var camera = CameraRig.GetComponentInChildren<Camera>(false);
+        //var mouseWorldPoint = camera.ScreenToWorldPoint(new Vector3(mouse.x, mouse.y, transform.position.y));
+        ////var forward = mouseWorldPoint - transform.position;
+
+        //// Rotate player to face the direction of movement
+        //transform.LookAt(mouseWorldPoint);
+        //Debug.Log(mouseWorldPoint);
+        ////transform.forward = Vector3.Lerp(transform.forward, new Vector3(mouseX, 0f, mouseY), 10 * Time.deltaTime);
+    }
+
+    public void LeftClick()
     {
         var autoAttack = Input.GetMouseButton(0);
         if (autoAttack && DateTime.Now - _lastAttackTime > TimeSpan.FromMilliseconds(_timeBetweenAutoAttacksMs))
@@ -74,28 +101,9 @@ public class PlayerController : MonoBehaviour
 
             var projectileController = projectile.GetComponent<ProjectileController>();
             projectile.GetComponent<Rigidbody>().velocity = transform.forward * projectileController.ProjectileSpeed;
-
-            // If you find an enemy, lob a projectile at it. Else shoot straight forward
-            //var enemy = FindObjectOfType<EnemyController>();
-            //if (enemy)
-            //{
-            //    var secondsToEnemy = 2;
-            //    var enemyExpectedPosition = enemy.GetExpectedPositionInMilliSeconds(secondsToEnemy * 1000);
-            //    var directionToEnemy = enemyExpectedPosition - projectile.transform.position;
-            //    var distanceToEnemy = Mathf.Sqrt(Mathf.Pow((enemy.transform.position.x - projectile.transform.position.x), 2) + Mathf.Pow((enemy.transform.position.z - projectile.transform.position.z), 2));
-
-            //    projectile.GetComponent<Rigidbody>().mass = 5;
-            //    projectile.GetComponent<Rigidbody>().useGravity = true;
-            //    projectile.GetComponent<Rigidbody>().velocity = new Vector3(directionToEnemy.x / secondsToEnemy, -1 * Physics.gravity.y, directionToEnemy.z / secondsToEnemy);
-            //}
-            //else
-            //{
-            //    projectile.GetComponent<Rigidbody>().velocity = transform.forward * projectileController.ProjectileSpeed;
-            //}
-
+            
             // Ensure projectile does not collide with player or the enemy
             Physics.IgnoreCollision(projectile.GetComponent<Collider>(), _player.GetComponent<Collider>());
-            //Physics.IgnoreCollision(projectile.GetComponent<Collider>(), enemy.GetComponent<Collider>());
         }
     }
 }
