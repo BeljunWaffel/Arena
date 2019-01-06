@@ -160,7 +160,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1125974572861444}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_Children:
   - {fileID: 4239432493056966}
@@ -557,10 +557,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d31808fbe192a74ca73c673b0eee193, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Tags:
-  - Player
-  - Button_Pusher
-  - Burnable
+  Tags: 00000000
 --- !u!114 &114960379836191070
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -573,9 +570,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _movementMultiplier: 5
-  CameraRig: {fileID: 0}
-  Projectile: {fileID: 4839912502338270, guid: 5443fe89ea87fd546b414f2c204bfc7a, type: 2}
-  _timeBetweenAutoAttacksMs: 0
+  _cameraRig: {fileID: 0}
+  _projectile: {fileID: 4839912502338270, guid: 5443fe89ea87fd546b414f2c204bfc7a,
+    type: 2}
+  _timeBetweenAutoAttacksMs: 100
 --- !u!135 &135246770023817284
 SphereCollider:
   m_ObjectHideFlags: 1

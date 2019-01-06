@@ -5,7 +5,6 @@ public class PlayerController : MonoBehaviour
 {
     // Movement
     [SerializeField] private float _movementMultiplier;
-    [SerializeField] private Camera _playerCamera;
     [SerializeField] private Transform _cameraRig;
     [SerializeField] private Transform _projectile;
 
