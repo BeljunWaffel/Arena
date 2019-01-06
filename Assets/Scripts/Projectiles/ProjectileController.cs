@@ -20,7 +20,7 @@ public class ProjectileController : MonoBehaviour
         }
     }
 
-    void OnCollisionStay(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         // Don't do anything if colliding with a projectile
         if (TagList.ContainsTag(collision.gameObject, Tag.Projectile))

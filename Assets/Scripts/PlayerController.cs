@@ -5,8 +5,8 @@ public class PlayerController : MonoBehaviour
 {
     // Movement
     [SerializeField] private float _movementMultiplier;
-    [SerializeField] public Transform CameraRig;
-    [SerializeField] public Transform Projectile;
+    [SerializeField] private Camera _playerCamera;
+    [SerializeField] private Transform _projectile;
 
     private Rigidbody _player;
     private float _distToGround;
@@ -56,34 +56,34 @@ public class PlayerController : MonoBehaviour
 
     public void RotatePlayerToFaceMouse()
     {
-        var camera = CameraRig.GetComponentInChildren<Camera>(false);
-        Ray camRay = camera.ScreenPointToRay(Input.mousePosition);
+        //Ray camRay = _playerCamera.ScreenPointToRay(Input.mousePosition);
 
-        RaycastHit floorHit;
-        // Perform the raycast and if it hits something on the floor layer...
-        if (Physics.Raycast(camRay, out floorHit, 100f))
-        {
-            // Create a vector from the player to the point on the floor the raycast from the mouse hit.
-            Vector3 playerToMouse = floorHit.point - transform.position;
+        //RaycastHit floorHit;
+        //// Perform the raycast and if it hits something on the floor layer...
+        //if (Physics.Raycast(camRay, out floorHit, 100f))
+        //{
+        //    // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+        //    Vector3 playerToMouse = floorHit.point - transform.position;
 
-            // Ensure the vector is horizontal to the player
-            playerToMouse.y = transform.position.y;
+        //    // Ensure the vector is horizontal to the player
+        //    playerToMouse.y = transform.position.y;
 
-            Debug.Log(playerToMouse);
-            transform.LookAt(playerToMouse);
-            //Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
-        }
+        //    Debug.Log(playerToMouse);
+        //    transform.LookAt(playerToMouse);
+        //    //Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
+        //}
 
         ////var mouseX = Input.GetAxis("Mouse X");
         ////var mouseY = Input.GetAxis("Mouse Y");
-        //var mouse = Input.mousePosition;
+        var mouse = Input.mousePosition;
+        var mouseWorldPoint = _playerCamera.ScreenToWorldPoint(new Vector3(mouse.x, mouse.y, _playerCamera.transform.position.y));
         
         //var camera = CameraRig.GetComponentInChildren<Camera>(false);
         //var mouseWorldPoint = camera.ScreenToWorldPoint(new Vector3(mouse.x, mouse.y, transform.position.y));
         ////var forward = mouseWorldPoint - transform.position;
 
         //// Rotate player to face the direction of movement
-        //transform.LookAt(mouseWorldPoint);
+        transform.LookAt(new Vector3(mouseWorldPoint.x, transform.position.y, mouseWorldPoint.z));
         //Debug.Log(mouseWorldPoint);
         ////transform.forward = Vector3.Lerp(transform.forward, new Vector3(mouseX, 0f, mouseY), 10 * Time.deltaTime);
     }
@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour
         if (autoAttack && DateTime.Now - _lastAttackTime > TimeSpan.FromMilliseconds(_timeBetweenAutoAttacksMs))
         {
             _lastAttackTime = DateTime.Now;
-            var projectile = Instantiate(Projectile);
+            var projectile = Instantiate(_projectile);
 
             // Determine where the projective starts relative to the player
             projectile.transform.SetPositionAndRotation(transform.position + transform.forward * .75f, Quaternion.identity);
