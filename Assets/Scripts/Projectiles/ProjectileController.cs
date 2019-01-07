@@ -1,48 +1,51 @@
-﻿using System.Diagnostics;
+﻿using Assets.Scripts.Utils;
+using System.Diagnostics;
 using UnityEngine;
-using static Constants;
 
-public class ProjectileController : MonoBehaviour
+namespace Assets.Scripts.Projectiles
 {
-    public float ProjectileSpeed = 10;
-    private Stopwatch _timeToLive = new Stopwatch();
-
-    void Start()
+    public class ProjectileController : MonoBehaviour
     {
-        _timeToLive.Start();
-    }
+        public float ProjectileSpeed = 10;
+        private Stopwatch _timeToLive = new Stopwatch();
 
-    private void Update()
-    {
-        if (_timeToLive.ElapsedMilliseconds >= 10000)
+        void Start()
         {
+            _timeToLive.Start();
+        }
+
+        private void Update()
+        {
+            if (_timeToLive.ElapsedMilliseconds >= 10000)
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            // Don't do anything if colliding with a projectile
+            if (TagList.ContainsTag(collision.gameObject, Tag.Projectile))
+            {
+                return;
+            }
+
+            if (TagList.ContainsTag(collision.gameObject, Tag.Player))
+            {
+                UnityEngine.Debug.Log("Projectile hit other player");
+                Destroy(gameObject);
+            }
+            else
+            {
+                UnityEngine.Debug.Log("Projectile hit a non-player");
+            }
+
             Destroy(gameObject);
         }
-    }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Don't do anything if colliding with a projectile
-        if (TagList.ContainsTag(collision.gameObject, Tag.Projectile))
+        private bool IsCollidingWithEnemyPlayer(Collision collision)
         {
-            return;
+            return TagList.ContainsTag(collision.gameObject, Tag.Player);
         }
-
-        if (TagList.ContainsTag(collision.gameObject, Tag.Player))
-        {
-            UnityEngine.Debug.Log("Projectile hit other player");
-            Destroy(gameObject);
-        }
-        else
-        {
-            UnityEngine.Debug.Log("Projectile hit a non-player");
-        }
-
-        Destroy(gameObject);
-    }
-
-    private bool IsCollidingWithEnemyPlayer(Collision collision)
-    {
-        return TagList.ContainsTag(collision.gameObject, Tag.Player);
     }
 }
