@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.PlayerScripts
 {
-    class Player : MonoBehaviour
+    class PlayerHealth : MonoBehaviour
     {
         [SerializeField] private int _startingHealth;
         private int _currentHealth;

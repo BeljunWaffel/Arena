@@ -34,7 +34,7 @@ namespace Assets.Scripts.Projectiles
             if (TagList.ContainsTag(collision.gameObject, Tag.Player))
             {
                 UnityEngine.Debug.Log("Projectile hit other player");
-                collision.gameObject.GetComponent<Player>().TakeDamage(1);
+                collision.gameObject.GetComponent<PlayerHealth>().TakeDamage(1);
                 Destroy(gameObject);
             }
             else
