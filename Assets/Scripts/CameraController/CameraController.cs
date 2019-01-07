@@ -6,9 +6,7 @@ namespace Assets.Scripts.CameraController
     {
         [SerializeField] private Transform _targetObject;    // The object to follow
         [SerializeField] private int _cameraMoveSpeed;
-
-        private Transform _camera;
-
+        
         void Start()
         {
             if (!_targetObject)
@@ -16,9 +14,6 @@ namespace Assets.Scripts.CameraController
                 Debug.Log("No Target Object has been set for the player camera");
                 return;
             }
-
-            // Camera
-            _camera = GetComponentInChildren<Camera>().transform;
         }
 
         private void FixedUpdate()

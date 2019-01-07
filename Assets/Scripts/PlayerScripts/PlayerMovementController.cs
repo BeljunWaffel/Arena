@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace Assets.Scripts.Player
+namespace Assets.Scripts.PlayerScripts
 {
     public class PlayerMovementController : MonoBehaviour
     {
