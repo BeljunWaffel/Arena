@@ -1,12 +1,11 @@
 ﻿using Assets.Scripts.SharedScripts;
 using UnityEngine;
 
-namespace Assets.Scripts.CameraController
+namespace Assets.Scripts.PlayerScripts
 {
-    public class CameraController : MonoBehaviour
+    class HealthBarCanvasController : MonoBehaviour
     {
-        [SerializeField] private Transform _targetObject;    // The object to follow
-        [SerializeField] private int _cameraMoveSpeed;
+        [SerializeField] private Transform _targetObject;
 
         private FollowerController _follower;
 
@@ -23,7 +22,7 @@ namespace Assets.Scripts.CameraController
 
         private void FixedUpdate()
         {
-            _follower.FollowTargetLerp(_cameraMoveSpeed);
+            _follower.FollowTarget();
         }
     }
 }
