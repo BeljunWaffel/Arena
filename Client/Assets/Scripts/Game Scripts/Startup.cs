@@ -1,5 +1,7 @@
-﻿using Assets.Scripts.PlayerScripts;
+﻿using System;
+using Assets.Scripts.PlayerScripts;
 using Assets.Scripts.ServiceHelpers;
+using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.Helpers;
 using UnityEngine;
@@ -20,7 +22,7 @@ namespace Assets.Scripts.Game_Scripts
         void Start()
         {
             _authService = PlayFabAuthService.Instance;
-            PlayFabAuthService.OnDisplayAuthentication += OnDisplayAuth;
+            //PlayFabAuthService.OnDisplayAuthentication += OnDisplayAuth;
             PlayFabAuthService.OnLoginSuccess += OnLoginSuccess;
 
             _unc = UnityNetworkingClient.Instance;
@@ -29,26 +31,8 @@ namespace Assets.Scripts.Game_Scripts
             _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.ShutdownMessage, OnServerShutdown);
             _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.MaintenanceMessage, OnMaintenanceMessage);
             _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerAddedMessage, OnPlayerAdded);
-            _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, OnPlayerLocationReceived);
 
             _messageWindow = MessageWindow.Instance;
-        }
-
-        private void Update()
-        {
-            if (Player.PlayFabId != null)
-            {
-                _timer += Time.deltaTime;
-                if (_timer >= 1f)
-                {
-                    _unc.Client?.connection?.Send(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, new UnityNetworkingClient.PlayerLocationMessage()
-                    {
-                        PlayFabId = Player.PlayFabId,
-                        PlayerLocation = Player.transform.localPosition
-                    });
-                    _timer = 0f;
-                }
-            }
         }
 
         private void OnPlayerAdded(NetworkMessage netMsg)
@@ -58,12 +42,6 @@ namespace Assets.Scripts.Game_Scripts
             _messageWindow.Message.text = string.Empty;
             _messageWindow.gameObject.SetActive(true);
             Debug.Log($"Player {message.PlayFabId} joined game! Location: {message.PlayerLocation}");
-        }
-
-        private void OnPlayerLocationReceived(NetworkMessage netMsg)
-        {
-            var message = netMsg.ReadMessage<UnityNetworkingClient.PlayerLocationMessage>();
-            Debug.Log($"Player {message.PlayFabId} location: {message.PlayerLocation}");
         }
 
         private void OnMaintenanceMessage(NetworkMessage netMsg)
@@ -84,13 +62,16 @@ namespace Assets.Scripts.Game_Scripts
 
         private void OnConnected()
         {
-            _authService.Authenticate();
-        }
+            var request = new LoginWithCustomIDRequest { CustomId = Guid.NewGuid().ToString(), CreateAccount = true };
+            PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure);
 
-        private void OnDisplayAuth()
-        {
-            _authService.Authenticate(Authtypes.Silent);
+            //_authService.Authenticate(Authtypes.Silent);
         }
+        
+        //private void OnDisplayAuth()
+        //{
+        //    _authService.Authenticate(Authtypes.Silent);
+        //}
 
         private void OnLoginSuccess(LoginResult success)
         {
@@ -105,6 +86,13 @@ namespace Assets.Scripts.Game_Scripts
                 PlayFabId = success.PlayFabId,
                 PlayerLocation = Player.transform.localPosition
             });
+        }
+
+        private void OnLoginFailure(PlayFabError obj)
+        {
+            _messageWindow.Title.text = "Login Failed";
+            _messageWindow.Message.text = string.Format("You failed to log in. Error:", obj.ErrorMessage);
+            _messageWindow.gameObject.SetActive(true);
         }
 
         private void OnDisconnected(int? code)

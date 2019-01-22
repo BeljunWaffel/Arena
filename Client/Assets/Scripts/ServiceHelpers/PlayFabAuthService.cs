@@ -203,7 +203,7 @@ using Facebook.Unity;
                 case Authtypes.OpenId:
                     AuthenticateOpenId();
                     break;
-                
+
             }
 
 
@@ -280,7 +280,8 @@ using Facebook.Unity;
                     break;
                 case Authtypes.Steam:
                     AuthType = Authtypes.Steam;
-                    PlayFabClientAPI.LinkSteamAccount(new LinkSteamAccountRequest() {
+                    PlayFabClientAPI.LinkSteamAccount(new LinkSteamAccountRequest()
+                    {
                         SteamTicket = AuthTicket,
                         ForceLink = ForceLink
                     }, (result) =>
@@ -303,7 +304,7 @@ using Facebook.Unity;
                     break;
                 case Authtypes.OpenId:
                     AuthType = Authtypes.OpenId;
-                    
+
                     break;
 
 
@@ -328,21 +329,21 @@ using Facebook.Unity;
                     InfoRequestParameters = InfoRequestParams
                 }, (result) =>
                 {
-                //Store identity and session
-                _playFabId = result.PlayFabId;
+                    //Store identity and session
+                    _playFabId = result.PlayFabId;
                     _sessionTicket = result.SessionTicket;
 
                     if (OnLoginSuccess != null)
                     {
-                    //report login result back to subscriber
-                    OnLoginSuccess.Invoke(result);
+                        //report login result back to subscriber
+                        OnLoginSuccess.Invoke(result);
                     }
                 }, (error) =>
                 {
                     if (OnPlayFabError != null)
                     {
-                    //report error back to subscriber
-                    OnPlayFabError.Invoke(error);
+                        //report error back to subscriber
+                        OnPlayFabError.Invoke(error);
                     }
                 });
                 return;
@@ -365,18 +366,18 @@ using Facebook.Unity;
                 InfoRequestParameters = InfoRequestParams
             }, (result) =>
             {
-            //store identity and session
-            _playFabId = result.PlayFabId;
+                //store identity and session
+                _playFabId = result.PlayFabId;
                 _sessionTicket = result.SessionTicket;
 
-            //Note: At this point, they already have an account with PlayFab using a Username (email) & Password
-            //If RememberMe is checked, then generate a new Guid for Login with CustomId.
-            if (RememberMe)
+                //Note: At this point, they already have an account with PlayFab using a Username (email) & Password
+                //If RememberMe is checked, then generate a new Guid for Login with CustomId.
+                if (RememberMe)
                 {
                     RememberMeId = Guid.NewGuid().ToString();
                     AuthType = Authtypes.EmailAndPassword;
-                //Fire and forget, but link a custom ID to this PlayFab Account.
-                PlayFabClientAPI.LinkCustomID(new LinkCustomIDRequest()
+                    //Fire and forget, but link a custom ID to this PlayFab Account.
+                    PlayFabClientAPI.LinkCustomID(new LinkCustomIDRequest()
                     {
                         CustomId = RememberMeId,
                         ForceLink = ForceLink
@@ -385,15 +386,15 @@ using Facebook.Unity;
 
                 if (OnLoginSuccess != null)
                 {
-                //report login result back to subscriber
-                OnLoginSuccess.Invoke(result);
+                    //report login result back to subscriber
+                    OnLoginSuccess.Invoke(result);
                 }
             }, (error) =>
             {
                 if (OnPlayFabError != null)
                 {
-                //Report error back to subscriber
-                OnPlayFabError.Invoke(error);
+                    //Report error back to subscriber
+                    OnPlayFabError.Invoke(error);
                 }
             });
         }
@@ -706,13 +707,13 @@ using Facebook.Unity;
                 DeviceId = SystemInfo.deviceUniqueIdentifier
             }, null, null);
 #else
-            PlayFabClientAPI.UnlinkCustomID(new UnlinkCustomIDRequest()
+                PlayFabClientAPI.UnlinkCustomID(new UnlinkCustomIDRequest()
                 {
                     CustomId = SystemInfo.deviceUniqueIdentifier
                 }, null, null);
 #endif
 
-        });
+            });
         }
 
 

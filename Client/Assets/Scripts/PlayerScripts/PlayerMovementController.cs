@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Projectiles;
+using Assets.Scripts.ServiceHelpers;
 using System;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace Assets.Scripts.PlayerScripts
     public class PlayerMovementController : MonoBehaviour
     {
         private Rigidbody _player;
+        private PlayerMetadata _playerMetadata;
 
         // Movement
         [SerializeField] private float _movementMultiplier;
@@ -19,7 +21,16 @@ namespace Assets.Scripts.PlayerScripts
 
         void Start()
         {
+            _playerMetadata = GetComponent<PlayerMetadata>();
             _player = GetComponent<Rigidbody>();
+            
+            var unc = UnityNetworkingClient.Instance;
+            unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, ServerCommunicator.OnPlayerLocationReceived);
+        }
+
+        private void Update()
+        {
+            ServerCommunicator.SendLocation(_playerMetadata.PlayFabId, transform.localPosition);
         }
 
         // Applied before physics
