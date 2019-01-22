@@ -39,7 +39,7 @@ namespace Assets.Scripts.Projectiles
             }
             else
             {
-                UnityEngine.Debug.Log("Projectile hit a non-player");
+                //UnityEngine.Debug.Log("Projectile hit a non-player");
             }
 
             Destroy(gameObject);

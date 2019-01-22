@@ -34,7 +34,7 @@ namespace Assets.Scripts.Game_Scripts
         private void Update()
         {
             _timer += Time.deltaTime;
-            if (_timer >= 5f)
+            if (_timer >= 20f)
             {
                 this.gameObject.SetActive(false);
                 _timer = 0f;

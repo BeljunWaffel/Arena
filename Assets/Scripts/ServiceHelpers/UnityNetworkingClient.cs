@@ -64,14 +64,20 @@ namespace Assets.Scripts.ServiceHelpers
 
         public class CustomGameServerMessageTypes
         {
+            // CONNECTION
             public const short ReceiveAuthenticate = 900;
             public const short ShutdownMessage = 901;
             public const short MaintenanceMessage = 902;
+
+            // COMMUNICATION
+            public const short PlayerAddedMessage = 1000;
+            public const short PlayerLocationMessage = 1001;
         }
 
-        public class ReceiveAuthenticateMessage : MessageBase
+        public class PlayerLocationMessage : MessageBase
         {
             public string PlayFabId;
+            public Vector3 PlayerLocation;
         }
 
         public class ShutdownMessage : MessageBase { }

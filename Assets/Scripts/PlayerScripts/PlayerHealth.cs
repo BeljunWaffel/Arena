@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.PlayerScripts
 {
-    class PlayerHealth : MonoBehaviour
+    public class PlayerHealth : MonoBehaviour
     {
         [SerializeField] private int _startingHealth;
         private int _currentHealth;
@@ -31,11 +31,11 @@ namespace Assets.Scripts.PlayerScripts
 
         void Update()
         {
-            if (s.ElapsedMilliseconds > 2500 && _currentHealth > 1)
-            {
-                TakeDamage(1);
-                s.Restart();
-            }
+            //if (s.ElapsedMilliseconds > 2500 && _currentHealth > 1)
+            //{
+            //    TakeDamage(1);
+            //    s.Restart();
+            //}
 
             if (_justGotDamaged)
             {
