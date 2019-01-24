@@ -21,19 +21,20 @@ namespace Assets.Scripts.ServiceHelpers
             }
         }
 
-        public static void SendLocation(string playfabId, Vector3 localPos)
+        public static void SendLocation(string playfabId, Vector3 localPos, Quaternion localRot)
         {
-            _unc.Client?.connection?.Send(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, new UnityNetworkingClient.PlayerLocationMessage()
-            {
-                PlayFabId = playfabId,
-                PlayerLocation = localPos
-            });
+            _unc.Client?.connection?.Send(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, 
+                new UnityNetworkingClient.PlayerLocationMessage(
+                    playfabId,
+                    localPos,
+                    localRot
+                ));
         }
 
         public static void OnPlayerLocationReceived(NetworkMessage netMsg)
         {
             var message = netMsg.ReadMessage<UnityNetworkingClient.PlayerLocationMessage>();
-            Debug.Log($"Player {message.PlayFabId} location: {message.PlayerLocation}");
+            Debug.Log($"Player {message.PlayFabId} location: {message.PlayerPosition}");
 
             var enemies = _enemiesContainer.transform;
             foreach (Transform enemy in enemies)
@@ -43,7 +44,8 @@ namespace Assets.Scripts.ServiceHelpers
                 var name = enemy.name;
                 if (id == message.PlayFabId)
                 {
-                    enemy.localPosition = message.PlayerLocation;
+                    enemy.localPosition = message.PlayerPosition;
+                    enemy.localRotation = message.PlayerRotation;
                 }
             }
         }

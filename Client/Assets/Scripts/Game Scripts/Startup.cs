@@ -43,13 +43,14 @@ namespace Assets.Scripts.Game_Scripts
             _messageWindow.Title.text = $"Player {message.PlayFabId} joined the game!";
             _messageWindow.Message.text = string.Empty;
             _messageWindow.gameObject.SetActive(true);
-            Debug.Log($"Player {message.PlayFabId} joined game! Location: {message.PlayerLocation}");
+            Debug.Log($"Player {message.PlayFabId} joined game! Location: {message.PlayerPosition}");
 
             // Create enemy
             var enemyTransform = Instantiate(EnemyPrefab, EnemiesContainer.transform);
             enemyTransform.gameObject.SetActive(true);
             enemyTransform.name = $"enemy{message.PlayFabId}";
-            enemyTransform.localPosition = message.PlayerLocation;
+            enemyTransform.localPosition = message.PlayerPosition;
+            enemyTransform.localRotation = message.PlayerRotation;
 
             // Set enemy playfabId
             var enemyMetadata = enemyTransform.GetComponentInChildren<PlayerMetadata>();
@@ -93,11 +94,12 @@ namespace Assets.Scripts.Game_Scripts
 
             Player.PlayFabId = success.PlayFabId;
 
-            _unc.Client.connection.Send(UnityNetworkingClient.CustomGameServerMessageTypes.ReceiveAuthenticate, new UnityNetworkingClient.PlayerLocationMessage()
-            {
-                PlayFabId = success.PlayFabId,
-                PlayerLocation = Player.transform.localPosition
-            });
+            _unc.Client.connection.Send(UnityNetworkingClient.CustomGameServerMessageTypes.ReceiveAuthenticate, 
+                new UnityNetworkingClient.PlayerLocationMessage(
+                    success.PlayFabId,
+                    Player.transform.localPosition,
+                    Player.transform.localRotation
+                ));
         }
 
         private void OnLoginFailure(PlayFabError obj)

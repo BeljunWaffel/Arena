@@ -30,7 +30,7 @@ namespace Assets.Scripts.PlayerScripts
 
         private void Update()
         {
-            ServerCommunicator.SendLocation(_playerMetadata.PlayFabId, transform.localPosition);
+            ServerCommunicator.SendLocation(_playerMetadata.PlayFabId, transform.localPosition, transform.localRotation);
         }
 
         // Applied before physics

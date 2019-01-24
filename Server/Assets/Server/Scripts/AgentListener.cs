@@ -75,7 +75,7 @@ public class AgentListener : MonoBehaviour {
         // Only start sending location for a given player once they have been added.
         if (PlayFabMultiplayerAgentAPI.HasPlayer(message.PlayFabId))
         {
-            Debug.Log($"Player {message.PlayFabId} location: {message.PlayerLocation}");
+            //Debug.Log($"Player {message.PlayFabId} location: {message.PlayerPosition}");
             SendEventToOtherClients(CustomGameServerMessageTypes.PlayerLocationMessage, message,
                 ignoreId: message.PlayFabId);
         }

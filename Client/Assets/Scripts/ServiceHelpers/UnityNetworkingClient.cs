@@ -75,7 +75,19 @@ namespace Assets.Scripts.ServiceHelpers
         public class PlayerLocationMessage : MessageBase
         {
             public string PlayFabId;
-            public Vector3 PlayerLocation;
+
+            public Vector3 PlayerPosition;
+
+            public Quaternion PlayerRotation;
+
+            public PlayerLocationMessage() { }
+
+            public PlayerLocationMessage(string playFabId, Vector3 playerPos, Quaternion playerRot)
+            {
+                PlayFabId = playFabId;
+                PlayerPosition = playerPos;
+                PlayerRotation = playerRot;
+            }
         }
 
         public class ShutdownMessage : MessageBase { }
