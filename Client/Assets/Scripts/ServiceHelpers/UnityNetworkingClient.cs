@@ -1,11 +1,9 @@
 ﻿using PlayFab;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
-using UnityEngine.Events;
 
 namespace Assets.Scripts.ServiceHelpers
 {
@@ -50,7 +48,7 @@ namespace Assets.Scripts.ServiceHelpers
             {
                 message = netMsg.ReadMessage<ErrorMessage>();
             }
-            catch (Exception e) { }
+            catch { }
 
             if (message != null)
             {

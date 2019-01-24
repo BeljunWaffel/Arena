@@ -12,6 +12,8 @@ namespace Assets.Scripts.Game_Scripts
     public class Startup : MonoBehaviour
     {
         public PlayerMetadata Player;
+        public Transform EnemyPrefab;
+        public GameObject EnemiesContainer;
 
         private PlayFabAuthService _authService;
         private UnityNetworkingClient _unc;
@@ -42,6 +44,16 @@ namespace Assets.Scripts.Game_Scripts
             _messageWindow.Message.text = string.Empty;
             _messageWindow.gameObject.SetActive(true);
             Debug.Log($"Player {message.PlayFabId} joined game! Location: {message.PlayerLocation}");
+
+            // Create enemy
+            var enemyTransform = Instantiate(EnemyPrefab, EnemiesContainer.transform);
+            enemyTransform.gameObject.SetActive(true);
+            enemyTransform.name = $"enemy{message.PlayFabId}";
+            enemyTransform.localPosition = message.PlayerLocation;
+
+            // Set enemy playfabId
+            var enemyMetadata = enemyTransform.GetComponentInChildren<PlayerMetadata>();
+            enemyMetadata.PlayFabId = message.PlayFabId;
         }
 
         private void OnMaintenanceMessage(NetworkMessage netMsg)

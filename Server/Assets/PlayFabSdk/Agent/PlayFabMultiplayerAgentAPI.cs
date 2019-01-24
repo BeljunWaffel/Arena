@@ -101,6 +101,11 @@ namespace PlayFab
             }
         }
 
+        public static bool HasPlayer(string playerId)
+        {
+            return (CurrentState.CurrentPlayers.Find(p => p.PlayerId == playerId) != null);
+        }
+
         public static Configuration GetConfigSettings()
         {
             return new Configuration(_config);
@@ -112,8 +117,7 @@ namespace PlayFab
         }
 
         internal static void SendHeartBeatRequest()
-        {
-            
+        {            
             var payload = _jsonWrapper.SerializeObject(CurrentState);
             if (string.IsNullOrEmpty(payload)) { return; }
             var payloadBytes = Encoding.ASCII.GetBytes(payload);
