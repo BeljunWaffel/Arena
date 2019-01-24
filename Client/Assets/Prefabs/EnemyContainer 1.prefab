@@ -661,7 +661,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d31808fbe192a74ca73c673b0eee193, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Tags: 00000000
+  Tags: 01000000
 --- !u!114 &114584894004513464
 MonoBehaviour:
   m_ObjectHideFlags: 1

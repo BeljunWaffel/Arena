@@ -36,14 +36,16 @@ namespace Assets.Scripts.ServiceHelpers
             var message = netMsg.ReadMessage<UnityNetworkingClient.PlayerLocationMessage>();
             Debug.Log($"Player {message.PlayFabId} location: {message.PlayerPosition}");
 
-            var enemies = _enemiesContainer.transform;
-            foreach (Transform enemy in enemies)
+            var enemyContainers = _enemiesContainer.transform;
+
+            foreach (Transform enemyContainer in enemyContainers)
             {
-                var playerMetadata = enemy.GetComponentInChildren<PlayerMetadata>();
+                var playerMetadata = enemyContainer.GetComponentInChildren<PlayerMetadata>();
                 var id = playerMetadata.PlayFabId;
-                var name = enemy.name;
                 if (id == message.PlayFabId)
                 {
+                    // TODO: probably want to refactor this to not assume child object is called enemy
+                    var enemy = enemyContainer.Find("Enemy");
                     enemy.localPosition = message.PlayerPosition;
                     enemy.localRotation = message.PlayerRotation;
                 }

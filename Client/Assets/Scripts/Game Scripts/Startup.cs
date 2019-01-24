@@ -46,15 +46,18 @@ namespace Assets.Scripts.Game_Scripts
             Debug.Log($"Player {message.PlayFabId} joined game! Location: {message.PlayerPosition}");
 
             // Create enemy
-            var enemyTransform = Instantiate(EnemyPrefab, EnemiesContainer.transform);
-            enemyTransform.gameObject.SetActive(true);
-            enemyTransform.name = $"enemy{message.PlayFabId}";
-            enemyTransform.localPosition = message.PlayerPosition;
-            enemyTransform.localRotation = message.PlayerRotation;
+            var enemyContainer = Instantiate(EnemyPrefab, EnemiesContainer.transform);
+            enemyContainer.gameObject.SetActive(true);
+            enemyContainer.name = $"enemy{message.PlayFabId}";
+            enemyContainer.localPosition = Vector3.zero;
+            enemyContainer.localRotation = Quaternion.identity;
 
             // Set enemy playfabId
-            var enemyMetadata = enemyTransform.GetComponentInChildren<PlayerMetadata>();
+            var enemy = enemyContainer.Find("Enemy");
+            var enemyMetadata = enemy.GetComponent<PlayerMetadata>();
             enemyMetadata.PlayFabId = message.PlayFabId;
+            enemy.localPosition = message.PlayerPosition;
+            enemy.localRotation = message.PlayerRotation;
         }
 
         private void OnMaintenanceMessage(NetworkMessage netMsg)

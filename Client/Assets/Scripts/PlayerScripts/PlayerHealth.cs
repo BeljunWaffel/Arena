@@ -15,18 +15,10 @@ namespace Assets.Scripts.PlayerScripts
         private bool _isDead;
         private bool _justGotDamaged;
 
-        private System.Diagnostics.Stopwatch s;
-
         void Awake()
         {
             _currentHealth = _startingHealth;
             _isDead = false;
-        }
-
-        private void Start()
-        {
-            s = new System.Diagnostics.Stopwatch();
-            s.Start();
         }
 
         void Update()

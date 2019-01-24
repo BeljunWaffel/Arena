@@ -6,6 +6,7 @@ namespace Assets.Scripts.Utils
     public enum Tag
     {
         Player,
+        Enemy,
         Projectile
     }
 
