@@ -47,7 +47,7 @@ namespace Assets.Scripts.ServiceHelpers
 
         #region SENDING
 
-        public void SendLocation(string playfabId, Transform player)
+        public void SendPlayerInfo(string playfabId, Transform player)
         {
             _unc?.Client?.connection?.Send(CustomGameServerMessageTypes.PlayerInfoMessage,
                 new PlayerInfoMessage(new PlayerInfo(playfabId, player))

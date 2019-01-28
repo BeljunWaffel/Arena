@@ -32,7 +32,7 @@ namespace Assets.Scripts.PlayerScripts
 
         private void Update()
         {
-            _serverCommunicator.SendLocation(_playerMetadata.PlayFabId, transform);
+            _serverCommunicator.SendPlayerInfo(_playerMetadata.PlayFabId, transform);
         }
 
         // Applied before physics
