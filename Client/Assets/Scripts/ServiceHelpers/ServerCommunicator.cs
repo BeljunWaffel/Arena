@@ -1,55 +1,60 @@
-﻿using Assets.Scripts.PlayerScripts;
+﻿using Assets.Scripts.Game_Scripts;
 using UnityEngine;
 using UnityEngine.Networking;
+using static Assets.Scripts.ServiceHelpers.UnityNetworkingClient;
 
 namespace Assets.Scripts.ServiceHelpers
 {
-    public static class ServerCommunicator
+    public class ServerCommunicator : MonoBehaviour
     {
-        private static UnityNetworkingClient _unc = UnityNetworkingClient.Instance;
+        private static UnityNetworkingClient _unc;
 
-        private static GameObject _enemiesContainerBacking;
-        private static GameObject _enemiesContainer
+        public void Start()
         {
-            get
+            _unc = UnityNetworkingClient.Instance;
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerAddedMessage, OnPlayerAdded);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayersAddedMessage, OnPlayersAdded);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnPlayerInfoReceived);
+        }
+
+        #region RECEIVING
+
+        private void OnPlayerAdded(NetworkMessage netMsg)
+        {
+            var message = netMsg.ReadMessage<PlayerInfoMessage>();
+            Debug.Log($"On Player Added {message.Internal.PlayFabId}");
+            GameState.CreatePlayer(message.Internal);
+        }
+
+        private void OnPlayersAdded(NetworkMessage netMsg)
+        {
+            var messages = netMsg.ReadMessage<PlayerInfoMessages>();
+            Debug.Log($"On Players Added");
+            foreach (PlayerInfo playerInfo in messages.Internal)
             {
-                if (_enemiesContainerBacking == null)
-                {
-                    _enemiesContainerBacking = GameObject.Find("Enemies");
-                }
-                return _enemiesContainerBacking;
+                GameState.CreatePlayer(playerInfo);
             }
         }
 
-        public static void SendLocation(string playfabId, Vector3 localPos, Quaternion localRot)
+        public void OnPlayerInfoReceived(NetworkMessage netMsg)
         {
-            _unc.Client?.connection?.Send(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, 
-                new UnityNetworkingClient.PlayerLocationMessage(
-                    playfabId,
-                    localPos,
-                    localRot
-                ));
+            var message = netMsg.ReadMessage<PlayerInfoMessage>();
+            Debug.Log($"Player {message.Internal.PlayFabId} location: {message.Internal.PlayerPosition}");
+            GameState.UpdatePlayerInfo(message.Internal);
         }
 
-        public static void OnPlayerLocationReceived(NetworkMessage netMsg)
+        #endregion RECEIVING
+
+        #region SENDING
+
+        public void SendLocation(string playfabId, Transform player)
         {
-            var message = netMsg.ReadMessage<UnityNetworkingClient.PlayerLocationMessage>();
-            Debug.Log($"Player {message.PlayFabId} location: {message.PlayerPosition}");
-
-            var enemyContainers = _enemiesContainer.transform;
-
-            foreach (Transform enemyContainer in enemyContainers)
-            {
-                var playerMetadata = enemyContainer.GetComponentInChildren<PlayerMetadata>();
-                var id = playerMetadata.PlayFabId;
-                if (id == message.PlayFabId)
-                {
-                    // TODO: probably want to refactor this to not assume child object is called enemy
-                    var enemy = enemyContainer.Find("Enemy");
-                    enemy.localPosition = message.PlayerPosition;
-                    enemy.localRotation = message.PlayerRotation;
-                }
-            }
+            _unc?.Client?.connection?.Send(CustomGameServerMessageTypes.PlayerInfoMessage,
+                new PlayerInfoMessage(new PlayerInfo(playfabId, player))
+            );
         }
+
+        #endregion SENDING
+
     }
 }

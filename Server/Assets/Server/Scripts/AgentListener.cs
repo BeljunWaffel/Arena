@@ -1,14 +1,18 @@
-﻿using System.Collections;
-using UnityEngine;
-using PlayFab;
-using System;
+﻿using PlayFab;
 using PlayFab.Networking;
+using System;
+using System.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class AgentListener : MonoBehaviour {
     public UnityNetworkServer UNetServer;
     public bool Debugging = false;
+
     private float _timer = 0f;
+    private float _timer2 = 0f;
+    private Vector3 _curr;
+    private bool _wasAdded = false;
 
     void Start () {
 
@@ -20,29 +24,44 @@ public class AgentListener : MonoBehaviour {
         PlayFabMultiplayerAgentAPI.OnAgentError += OnAgentError;
 
         UNetServer.OnPlayerAdded.AddListener(OnPlayerAdded);
-        UNetServer.OnPlayerLocationReceived.AddListener(OnPlayerLocationReceived);
+        UNetServer.OnPlayerInfoReceived.AddListener(OnPlayerInfoReceived);
         UNetServer.OnPlayerRemoved.AddListener(OnPlayerRemoved);
 
         StartCoroutine(ReadyForPlayers());
+
+        //// Debugging
+        //_curr = new Vector3(2.5f, 0.5f, 2.5f);
+        //var message = new PlayerInfoMessage(new PlayerInfo("1234", _curr, Quaternion.identity));
+        //OnPlayerAdded(message);
+
+        //_curr = new Vector3(2.5f, 0.5f, 5f);
+        //var message2 = new PlayerInfoMessage(new PlayerInfo("1235", _curr, Quaternion.identity));
+        //OnPlayerAdded(message2);
     }
 
     // FOR DEBUGGING AND SENDING FAKE EVENTS
-
+    
     //private void Update()
     //{
     //    _timer += Time.deltaTime;
+    //    _timer2 += Time.deltaTime;
     //    var jump = Input.GetAxis("Jump");
     //    if (jump != 0 && _timer > 5f)
     //    {
     //        _timer = 0f;
     //        Debug.Log("Sending player added message");
-    //        var message = new PlayerLocationMessage()
-    //        {
-    //            PlayFabId = "1234",
-    //            PlayerLocation = new Vector3(2, .5f, 2)
-    //        };
-    //        SendEventToOtherClients(CustomGameServerMessageTypes.PlayerAddedMessage, message);
-    //    }        
+    //        _curr = new Vector3(2.5f, 0.5f, 2.5f);
+    //        var message = new PlayerInfoMessage(new PlayerInfo("1234", _curr, Quaternion.identity));
+    //        OnPlayerAdded(message);
+    //        _wasAdded = true;
+    //    }
+
+    //    if (_wasAdded && _timer2 > 1f)
+    //    {
+    //        _timer2 = 0f;
+    //        var info = new PlayerInfo("1234", _curr += new Vector3(.3f, 0f, 0f), Quaternion.identity);
+    //        SendEventToOtherClients(CustomGameServerMessageTypes.PlayerInfoMessage, new PlayerInfoMessage(info));
+    //    }
     //}
 
     IEnumerator ReadyForPlayers()
@@ -62,22 +81,52 @@ public class AgentListener : MonoBehaviour {
         PlayFabMultiplayerAgentAPI.RemovePlayer(playfabId);
     }
 
-    private void OnPlayerAdded(PlayerLocationMessage message)
+    private void OnPlayerAdded(PlayerInfoMessage message)
     {
-        Debug.Log($"Player added! {message.PlayFabId}");
-        PlayFabMultiplayerAgentAPI.AddPlayer(message.PlayFabId);
-        SendEventToOtherClients(CustomGameServerMessageTypes.PlayerAddedMessage, message, 
-            ignoreId: message.PlayFabId);
+        var playFabId = message.Internal.PlayFabId;
+        Debug.Log($"Player {playFabId} added!");
+
+        // If there are other players than the one that just connected, send their data over
+        if (PlayFabMultiplayerAgentAPI.Players.Count > 0)
+        {
+            var playerInfoArray = new PlayerInfo[PlayFabMultiplayerAgentAPI.Players.Count];
+            var counter = 0;
+            foreach (var playerId in PlayFabMultiplayerAgentAPI.Players.Keys)
+            {
+                playerInfoArray[counter] = new PlayerInfo(PlayFabMultiplayerAgentAPI.Players[playerId]);
+                counter++;
+            }
+            var existingPlayersMessage = new PlayerInfoMessages(playerInfoArray);
+
+            foreach (var item in existingPlayersMessage.Internal)
+            {
+                Debug.Log($"{item.PlayFabId}, {item.PlayerPosition}, {item.PlayerRotation}");
+            }
+            SendEventToClient(playFabId, CustomGameServerMessageTypes.PlayersAddedMessage, existingPlayersMessage);
+        }
+
+        // Then add this player, and send their data to other clients.
+        PlayFabMultiplayerAgentAPI.AddPlayer(message.Internal);
+        SendEventToOtherClients(CustomGameServerMessageTypes.PlayerAddedMessage, message, ignoreId: playFabId);
     }
 
-    private void OnPlayerLocationReceived(PlayerLocationMessage message)
+    private void OnPlayerInfoReceived(PlayerInfoMessage message)
     {
+        var playFabId = message.Internal.PlayFabId;
         // Only start sending location for a given player once they have been added.
-        if (PlayFabMultiplayerAgentAPI.HasPlayer(message.PlayFabId))
+        if (PlayFabMultiplayerAgentAPI.Players.ContainsKey(playFabId))
         {
-            //Debug.Log($"Player {message.PlayFabId} location: {message.PlayerPosition}");
-            SendEventToOtherClients(CustomGameServerMessageTypes.PlayerLocationMessage, message,
-                ignoreId: message.PlayFabId);
+            PlayFabMultiplayerAgentAPI.Players[playFabId].UpdateInfo(message.Internal);
+            //Debug.Log($"Player {message.Internal.PlayFabId} location: {message.Internal.PlayerPosition}");
+            SendEventToOtherClients(CustomGameServerMessageTypes.PlayerInfoMessage, message, ignoreId: playFabId);
+        }
+    }
+
+    private void OnProjectileFired(ProjectileFiredMessage message)
+    {
+        if (PlayFabMultiplayerAgentAPI.Players.ContainsKey(message.PlayFabId))
+        {
+            SendEventToOtherClients(CustomGameServerMessageTypes.ProjectileFiredMessage, message, ignoreId: message.PlayFabId);
         }
     }
 
@@ -86,6 +135,17 @@ public class AgentListener : MonoBehaviour {
         foreach (var conn in UNetServer.Connections)
         {
             if (conn.PlayFabId != ignoreId)
+            {
+                conn.Connection.Send(messageType, message);
+            }
+        }
+    }
+
+    private void SendEventToClient(string playFabId, short messageType, MessageBase message)
+    {
+        foreach (var conn in UNetServer.Connections)
+        {
+            if (conn.PlayFabId == playFabId)
             {
                 conn.Connection.Send(messageType, message);
             }

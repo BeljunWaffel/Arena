@@ -1,5 +1,6 @@
 ﻿using PlayFab;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -68,11 +69,37 @@ namespace Assets.Scripts.ServiceHelpers
             public const short MaintenanceMessage = 902;
 
             // COMMUNICATION
-            public const short PlayerAddedMessage = 1000;
-            public const short PlayerLocationMessage = 1001;
+            public const short PlayerAddedMessage = 999;
+            public const short PlayersAddedMessage = 1000;
+            public const short PlayerInfoMessage = 1001;
+            public const short ProjectileFiredMessage = 1002;
         }
 
-        public class PlayerLocationMessage : MessageBase
+        public class PlayerInfoMessages : MessageBase
+        {
+            public PlayerInfo[] Internal;
+
+            public PlayerInfoMessages() { }
+
+            public PlayerInfoMessages(PlayerInfo[] messages)
+            {
+                Internal = messages;
+            }
+        }
+
+        public class PlayerInfoMessage : MessageBase
+        {
+            public PlayerInfo Internal;
+
+            public PlayerInfoMessage() { }
+
+            public PlayerInfoMessage(PlayerInfo playerInfo)
+            {
+                Internal = playerInfo;
+            }
+        }
+
+        public struct PlayerInfo
         {
             public string PlayFabId;
 
@@ -80,13 +107,39 @@ namespace Assets.Scripts.ServiceHelpers
 
             public Quaternion PlayerRotation;
 
-            public PlayerLocationMessage() { }
-
-            public PlayerLocationMessage(string playFabId, Vector3 playerPos, Quaternion playerRot)
+            public PlayerInfo(string playFabId, Vector3 playerPos, Quaternion playerRot)
             {
                 PlayFabId = playFabId;
                 PlayerPosition = playerPos;
                 PlayerRotation = playerRot;
+            }
+
+            public PlayerInfo(string playFabId, Transform player)
+            {
+                PlayFabId = playFabId;
+                PlayerPosition = player.localPosition;
+                PlayerRotation = player.localRotation;
+            }
+        }
+
+        public class ProjectileFiredMessage : MessageBase
+        {
+            public string PlayFabId;
+
+            public Vector3 ProjectileStartingPosition;
+
+            public Quaternion ProjectileStartingRotation;
+
+            public float ProjectileSpeed;
+
+            public ProjectileFiredMessage() { }
+
+            public ProjectileFiredMessage(string playFabId, Vector3 projPos, Quaternion projRot, float projSpeed)
+            {
+                PlayFabId = playFabId;
+                ProjectileStartingPosition = projPos;
+                ProjectileStartingRotation = projRot;
+                ProjectileSpeed = projSpeed;
             }
         }
 

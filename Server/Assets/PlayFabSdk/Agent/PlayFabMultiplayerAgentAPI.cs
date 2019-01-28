@@ -7,10 +7,12 @@ using System.IO;
 using System.Linq;
 using PlayFab.Json;
 using UnityEngine;
+using PlayFab.Networking;
 
 namespace PlayFab
 {
     using AgentModels;
+    using PlayFab.Networking;
     using System.Text;
     
     #pragma warning disable 414
@@ -38,6 +40,7 @@ namespace PlayFab
         
         public static SessionConfig SessionConfig = new SessionConfig();
         public static HeartbeatRequest CurrentState = new HeartbeatRequest();
+        public static Dictionary<string, BackendPlayerInfo> Players = new Dictionary<string, BackendPlayerInfo>();
         public static ErrorStates CurrentErrorState = ErrorStates.Ok;
         public static bool IsProcessing = false;
         public static bool IsDebugging = false;
@@ -84,11 +87,13 @@ namespace PlayFab
             CurrentState.CurrentGameState = status;
         }
 
-        public static void AddPlayer(string playerId)
+        public static void AddPlayer(PlayerInfo playerInfo)
         {
+            var playerId = playerInfo.PlayFabId;
             if (CurrentState.CurrentPlayers.Find(p => p.PlayerId == playerId) == null)
             {
                 CurrentState.CurrentPlayers.Add(new ConnectedPlayer(playerId));
+                Players[playerId] = new BackendPlayerInfo(playerInfo);
             }
         }
 
@@ -98,12 +103,8 @@ namespace PlayFab
             if (player != null)
             {
                 CurrentState.CurrentPlayers.Remove(player);
+                Players.Remove(playerId);
             }
-        }
-
-        public static bool HasPlayer(string playerId)
-        {
-            return (CurrentState.CurrentPlayers.Find(p => p.PlayerId == playerId) != null);
         }
 
         public static Configuration GetConfigSettings()
@@ -117,7 +118,7 @@ namespace PlayFab
         }
 
         internal static void SendHeartBeatRequest()
-        {            
+        {
             var payload = _jsonWrapper.SerializeObject(CurrentState);
             if (string.IsNullOrEmpty(payload)) { return; }
             var payloadBytes = Encoding.ASCII.GetBytes(payload);
@@ -308,14 +309,35 @@ namespace PlayFab.AgentModels
         Operation_Count
     }
 
+    public class BackendPlayerInfo
+    {
+        public string PlayerId;
+
+        public Vector3 PlayerPosition;
+
+        public Quaternion PlayerRotation;
+        
+        public BackendPlayerInfo(PlayerInfo playerInfo)
+        {
+            UpdateInfo(playerInfo);
+        }
+
+        public void UpdateInfo(PlayerInfo playerInfo)
+        {
+            PlayerId = playerInfo.PlayFabId;
+            PlayerPosition = playerInfo.PlayerPosition;
+            PlayerRotation = playerInfo.PlayerRotation;
+        }
+    }
+
     [Serializable]
     public class ConnectedPlayer
     {
         public string PlayerId { get; set; }
-
+        
         public ConnectedPlayer(string playerid)
         {
-            this.PlayerId = playerid;
+            PlayerId = playerid;
         }
     }
 

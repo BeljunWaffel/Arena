@@ -10,6 +10,9 @@ namespace Assets.Scripts.PlayerScripts
         private Rigidbody _player;
         private PlayerMetadata _playerMetadata;
 
+        // Communication with server
+        [SerializeField] private ServerCommunicator _serverCommunicator;
+
         // Movement
         [SerializeField] private float _movementMultiplier;
         [SerializeField] private Transform _cameraRig;
@@ -25,12 +28,11 @@ namespace Assets.Scripts.PlayerScripts
             _player = GetComponent<Rigidbody>();
             
             var unc = UnityNetworkingClient.Instance;
-            unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerLocationMessage, ServerCommunicator.OnPlayerLocationReceived);
         }
 
         private void Update()
         {
-            ServerCommunicator.SendLocation(_playerMetadata.PlayFabId, transform.localPosition, transform.localRotation);
+            _serverCommunicator.SendLocation(_playerMetadata.PlayFabId, transform);
         }
 
         // Applied before physics

@@ -6,12 +6,13 @@
     using UnityEngine.Networking;
     using UnityEngine.Events;
     using UnityEngine.Networking.NetworkSystem;
+    using PlayFab.AgentModels;
 
     public class UnityNetworkServer : MonoBehaviour
     {
-        public PlayerWithLocationEvent OnPlayerAdded = new PlayerWithLocationEvent();
+        public PlayerInfoEvent OnPlayerAdded = new PlayerInfoEvent();
         public PlayerEvent OnPlayerRemoved = new PlayerEvent();
-        public PlayerWithLocationEvent OnPlayerLocationReceived = new PlayerWithLocationEvent();
+        public PlayerInfoEvent OnPlayerInfoReceived = new PlayerInfoEvent();
 
         public int MaxConnections = 100;
         public int Port = 7777;
@@ -26,7 +27,7 @@
 
         public class PlayerEvent : UnityEvent<string> { }
 
-        public class PlayerWithLocationEvent : UnityEvent<PlayerLocationMessage> { }        
+        public class PlayerInfoEvent : UnityEvent<PlayerInfoMessage> { }        
 
         // Use this for initialization
         void Awake()
@@ -36,7 +37,7 @@
             NetworkServer.RegisterHandler(MsgType.Disconnect, OnServerDisconnect);
             NetworkServer.RegisterHandler(MsgType.Error, OnServerError);
             NetworkServer.RegisterHandler(CustomGameServerMessageTypes.ReceiveAuthenticate, OnReceiveAuthenticate);
-            NetworkServer.RegisterHandler(CustomGameServerMessageTypes.PlayerLocationMessage, OnReceivePlayerLocation);
+            NetworkServer.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnReceivePlayerLocation);
             _netManager.networkPort = Port;
         }
 
@@ -55,8 +56,8 @@
             var conn = _connections.Find(c => c.ConnectionId == netMsg.conn.connectionId);
             if (conn != null)
             {
-                var message = netMsg.ReadMessage<PlayerLocationMessage>();
-                conn.PlayFabId = message.PlayFabId;
+                var message = netMsg.ReadMessage<PlayerInfoMessage>();
+                conn.PlayFabId = message.Internal.PlayFabId;
                 conn.IsAuthenticated = true;
                 OnPlayerAdded.Invoke(message);
             }
@@ -67,8 +68,8 @@
             var conn = _connections.Find(c => c.ConnectionId == netMsg.conn.connectionId);
             if (conn != null)
             {
-                var message = netMsg.ReadMessage<PlayerLocationMessage>();
-                OnPlayerLocationReceived.Invoke(message);
+                var message = netMsg.ReadMessage<PlayerInfoMessage>();
+                OnPlayerInfoReceived.Invoke(message);
             }
         }
 
@@ -137,11 +138,38 @@
         public const short MaintenanceMessage = 902;
 
         // COMMUNICATION
-        public const short PlayerAddedMessage = 1000;
-        public const short PlayerLocationMessage = 1001;
+        public const short PlayerAddedMessage = 999;
+        public const short PlayersAddedMessage = 1000;
+        public const short PlayerInfoMessage = 1001;
+        public const short ProjectileFiredMessage = 1002;
     }
 
-    public class PlayerLocationMessage : MessageBase
+    [Serializable]
+    public class PlayerInfoMessages : MessageBase
+    {
+        public PlayerInfo[] Internal;
+
+        public PlayerInfoMessages() { }
+
+        public PlayerInfoMessages(PlayerInfo[] messages) {
+            Internal = messages;
+        }
+    }
+
+    [Serializable]
+    public class PlayerInfoMessage : MessageBase
+    {
+        public PlayerInfo Internal;
+
+        public PlayerInfoMessage() { }
+
+        public PlayerInfoMessage(PlayerInfo playerInfo)
+        {
+            Internal = playerInfo;
+        }
+    }
+
+    public struct PlayerInfo
     {
         public string PlayFabId;
 
@@ -149,13 +177,40 @@
 
         public Quaternion PlayerRotation;
 
-        public PlayerLocationMessage() { }
-
-        public PlayerLocationMessage(string playFabId, Vector3 playerPos, Quaternion playerRot)
+        public PlayerInfo(string playFabId, Vector3 playerPos, Quaternion playerRot)
         {
             PlayFabId = playFabId;
             PlayerPosition = playerPos;
             PlayerRotation = playerRot;
+        }
+
+        public PlayerInfo(BackendPlayerInfo player)
+        {
+            PlayFabId = player.PlayerId;
+            PlayerPosition = player.PlayerPosition;
+            PlayerRotation = player.PlayerRotation;
+        }
+    }
+
+    [Serializable]
+    public class ProjectileFiredMessage : MessageBase
+    {
+        public string PlayFabId;
+
+        public Vector3 ProjectileStartingPosition;
+
+        public Quaternion ProjectileStartingRotation;
+
+        public float ProjectileSpeed;
+
+        public ProjectileFiredMessage() { }
+
+        public ProjectileFiredMessage(string playFabId, Vector3 projPos, Quaternion projRot, float projSpeed)
+        {
+            PlayFabId = playFabId;
+            ProjectileStartingPosition = projPos;
+            ProjectileStartingRotation = projRot;
+            ProjectileSpeed = projSpeed;
         }
     }
 

@@ -6,19 +6,17 @@ using PlayFab.ClientModels;
 using PlayFab.Helpers;
 using UnityEngine;
 using UnityEngine.Networking;
+using static Assets.Scripts.ServiceHelpers.UnityNetworkingClient;
 
 namespace Assets.Scripts.Game_Scripts
 {
     public class Startup : MonoBehaviour
     {
-        public PlayerMetadata Player;
-        public Transform EnemyPrefab;
-        public GameObject EnemiesContainer;
+        public PlayerMetadata CurrentPlayerMetadata;
 
         private PlayFabAuthService _authService;
         private UnityNetworkingClient _unc;
         private MessageWindow _messageWindow;
-        private float _timer = 0f;
 
         // Use this for initialization
         void Start()
@@ -30,34 +28,10 @@ namespace Assets.Scripts.Game_Scripts
             _unc = UnityNetworkingClient.Instance;
             _unc.OnDisconnected.AddListener(OnDisconnected);
             _unc.OnConnected.AddListener(OnConnected);
-            _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.ShutdownMessage, OnServerShutdown);
-            _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.MaintenanceMessage, OnMaintenanceMessage);
-            _unc.Client.RegisterHandler(UnityNetworkingClient.CustomGameServerMessageTypes.PlayerAddedMessage, OnPlayerAdded);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.ShutdownMessage, OnServerShutdown);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.MaintenanceMessage, OnMaintenanceMessage);
 
             _messageWindow = MessageWindow.Instance;
-        }
-
-        private void OnPlayerAdded(NetworkMessage netMsg)
-        {
-            var message = netMsg.ReadMessage<UnityNetworkingClient.PlayerLocationMessage>();
-            _messageWindow.Title.text = $"Player {message.PlayFabId} joined the game!";
-            _messageWindow.Message.text = string.Empty;
-            _messageWindow.gameObject.SetActive(true);
-            Debug.Log($"Player {message.PlayFabId} joined game! Location: {message.PlayerPosition}");
-
-            // Create enemy
-            var enemyContainer = Instantiate(EnemyPrefab, EnemiesContainer.transform);
-            enemyContainer.gameObject.SetActive(true);
-            enemyContainer.name = $"enemy{message.PlayFabId}";
-            enemyContainer.localPosition = Vector3.zero;
-            enemyContainer.localRotation = Quaternion.identity;
-
-            // Set enemy playfabId
-            var enemy = enemyContainer.Find("Enemy");
-            var enemyMetadata = enemy.GetComponent<PlayerMetadata>();
-            enemyMetadata.PlayFabId = message.PlayFabId;
-            enemy.localPosition = message.PlayerPosition;
-            enemy.localRotation = message.PlayerRotation;
         }
 
         private void OnMaintenanceMessage(NetworkMessage netMsg)
@@ -95,14 +69,10 @@ namespace Assets.Scripts.Game_Scripts
             _messageWindow.Message.text = string.Format("You logged in successfully. ID:{0}", success.PlayFabId);
             _messageWindow.gameObject.SetActive(true);
 
-            Player.PlayFabId = success.PlayFabId;
+            CurrentPlayerMetadata.PlayFabId = success.PlayFabId;
 
-            _unc.Client.connection.Send(UnityNetworkingClient.CustomGameServerMessageTypes.ReceiveAuthenticate, 
-                new UnityNetworkingClient.PlayerLocationMessage(
-                    success.PlayFabId,
-                    Player.transform.localPosition,
-                    Player.transform.localRotation
-                ));
+            var playerInfoInternal = new PlayerInfo(success.PlayFabId, CurrentPlayerMetadata.transform);
+            _unc.Client.connection.Send(CustomGameServerMessageTypes.ReceiveAuthenticate, new PlayerInfoMessage(playerInfoInternal));
         }
 
         private void OnLoginFailure(PlayFabError obj)
