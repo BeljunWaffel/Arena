@@ -130,16 +130,16 @@ namespace Assets.Scripts.ServiceHelpers
 
             public Quaternion ProjectileStartingRotation;
 
-            public float ProjectileSpeed;
+            public Vector3 ProjectileVelocity;
 
             public ProjectileFiredMessage() { }
 
-            public ProjectileFiredMessage(string playFabId, Vector3 projPos, Quaternion projRot, float projSpeed)
+            public ProjectileFiredMessage(string playFabId, Transform projectile)
             {
                 PlayFabId = playFabId;
-                ProjectileStartingPosition = projPos;
-                ProjectileStartingRotation = projRot;
-                ProjectileSpeed = projSpeed;
+                ProjectileStartingPosition = projectile.localPosition;
+                ProjectileStartingRotation = projectile.localRotation;
+                ProjectileVelocity = projectile.GetComponent<Rigidbody>().velocity;
             }
         }
 

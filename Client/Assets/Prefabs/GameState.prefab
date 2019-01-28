@@ -66,3 +66,5 @@ MonoBehaviour:
   EnemiesContainerBacking: {fileID: 0}
   EnemyPrefabBacking: {fileID: 4595967819142680, guid: 04d188359faee7544a69d7f6590596c3,
     type: 2}
+  ProjectilePrefabBacking: {fileID: 4839912502338270, guid: 5443fe89ea87fd546b414f2c204bfc7a,
+    type: 2}

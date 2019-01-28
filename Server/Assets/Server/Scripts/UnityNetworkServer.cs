@@ -13,6 +13,7 @@
         public PlayerInfoEvent OnPlayerAdded = new PlayerInfoEvent();
         public PlayerEvent OnPlayerRemoved = new PlayerEvent();
         public PlayerInfoEvent OnPlayerInfoReceived = new PlayerInfoEvent();
+        public ProjectileInfoEvent OnProjectileFiredReceived = new ProjectileInfoEvent();
 
         public int MaxConnections = 100;
         public int Port = 7777;
@@ -27,7 +28,9 @@
 
         public class PlayerEvent : UnityEvent<string> { }
 
-        public class PlayerInfoEvent : UnityEvent<PlayerInfoMessage> { }        
+        public class PlayerInfoEvent : UnityEvent<PlayerInfoMessage> { }     
+        
+        public class ProjectileInfoEvent : UnityEvent<ProjectileFiredMessage> { }        
 
         // Use this for initialization
         void Awake()
@@ -37,7 +40,8 @@
             NetworkServer.RegisterHandler(MsgType.Disconnect, OnServerDisconnect);
             NetworkServer.RegisterHandler(MsgType.Error, OnServerError);
             NetworkServer.RegisterHandler(CustomGameServerMessageTypes.ReceiveAuthenticate, OnReceiveAuthenticate);
-            NetworkServer.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnReceivePlayerLocation);
+            NetworkServer.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnReceivePlayerInfo);
+            NetworkServer.RegisterHandler(CustomGameServerMessageTypes.ProjectileFiredMessage, OnProjectileFired);
             _netManager.networkPort = Port;
         }
 
@@ -63,13 +67,23 @@
             }
         }
 
-        private void OnReceivePlayerLocation(NetworkMessage netMsg)
+        private void OnReceivePlayerInfo(NetworkMessage netMsg)
         {
             var conn = _connections.Find(c => c.ConnectionId == netMsg.conn.connectionId);
             if (conn != null)
             {
                 var message = netMsg.ReadMessage<PlayerInfoMessage>();
                 OnPlayerInfoReceived.Invoke(message);
+            }
+        }
+
+        private void OnProjectileFired(NetworkMessage netMsg)
+        {
+            var conn = _connections.Find(c => c.ConnectionId == netMsg.conn.connectionId);
+            if (conn != null)
+            {
+                var message = netMsg.ReadMessage<ProjectileFiredMessage>();
+                OnProjectileFiredReceived.Invoke(message);
             }
         }
 
@@ -201,17 +215,9 @@
 
         public Quaternion ProjectileStartingRotation;
 
-        public float ProjectileSpeed;
+        public Vector3 ProjectileVelocity;
 
         public ProjectileFiredMessage() { }
-
-        public ProjectileFiredMessage(string playFabId, Vector3 projPos, Quaternion projRot, float projSpeed)
-        {
-            PlayFabId = playFabId;
-            ProjectileStartingPosition = projPos;
-            ProjectileStartingRotation = projRot;
-            ProjectileSpeed = projSpeed;
-        }
     }
 
     public class ShutdownMessage : MessageBase {}

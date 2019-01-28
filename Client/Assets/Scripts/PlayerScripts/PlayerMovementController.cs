@@ -100,6 +100,8 @@ namespace Assets.Scripts.PlayerScripts
 
                 // Ensure projectile does not collide with player or the enemy
                 Physics.IgnoreCollision(projectile.GetComponent<Collider>(), GetComponent<Collider>());
+
+                _serverCommunicator.SendProjectileFired(_playerMetadata.PlayFabId, projectile);
             }
         }
     }

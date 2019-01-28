@@ -25,6 +25,7 @@ public class AgentListener : MonoBehaviour {
 
         UNetServer.OnPlayerAdded.AddListener(OnPlayerAdded);
         UNetServer.OnPlayerInfoReceived.AddListener(OnPlayerInfoReceived);
+        UNetServer.OnProjectileFiredReceived.AddListener(OnProjectileFired);
         UNetServer.OnPlayerRemoved.AddListener(OnPlayerRemoved);
 
         StartCoroutine(ReadyForPlayers());
@@ -126,6 +127,7 @@ public class AgentListener : MonoBehaviour {
     {
         if (PlayFabMultiplayerAgentAPI.Players.ContainsKey(message.PlayFabId))
         {
+            //Debug.Log($"{message.ProjectileStartingPosition}, {message.ProjectileVelocity}");
             SendEventToOtherClients(CustomGameServerMessageTypes.ProjectileFiredMessage, message, ignoreId: message.PlayFabId);
         }
     }

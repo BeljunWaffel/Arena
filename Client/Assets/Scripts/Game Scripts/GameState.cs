@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.PlayerScripts;
+using Assets.Scripts.Projectiles;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,17 +12,20 @@ namespace Assets.Scripts.Game_Scripts
     {
         [SerializeField] private GameObject EnemiesContainerBacking;
         [SerializeField] private Transform EnemyPrefabBacking;
+        [SerializeField] private Transform ProjectilePrefabBacking;
 
         private static Dictionary<string, Transform> _players;
         private static MessageWindow _messageWindow;
         private static GameObject _enemiesContainer;
         private static Transform _enemyPrefab;
+        private static Transform _projectilePrefab;
 
         private void Awake()
         {
             _players = new Dictionary<string, Transform>();
             _enemiesContainer = EnemiesContainerBacking;
             _enemyPrefab = EnemyPrefabBacking;
+            _projectilePrefab = ProjectilePrefabBacking;
 
             if (_enemiesContainer == null)
             {
@@ -83,30 +87,35 @@ namespace Assets.Scripts.Game_Scripts
 
         public static void UpdatePlayerInfo(PlayerInfo info)
         {
-            //Transform player;
-            //if (TryGetPlayer(info.PlayFabId, out player))
-            //{
-            //    player.transform.localPosition = info.PlayerPosition;
-            //    player.transform.localRotation = info.PlayerRotation;
-            //}
-            //else
-            //{
-            //    Debug.Log($"Player {info.PlayFabId} does not exist / was not added to players dictionary");
-            //}
-
-            var enemyContainers = _enemiesContainer.transform;
-
-            foreach (Transform enemyContainer in enemyContainers)
+            Transform player;
+            if (TryGetPlayer(info.PlayFabId, out player))
             {
-                var playerMetadata = enemyContainer.GetComponentInChildren<PlayerMetadata>();
-                var id = playerMetadata.PlayFabId;
-                if (id == info.PlayFabId)
-                {
-                    // TODO: probably want to refactor this to not assume child object is called enemy
-                    var enemy = enemyContainer.Find("Enemy");
-                    enemy.localPosition = info.PlayerPosition;
-                    enemy.localRotation = info.PlayerRotation;
-                }
+                player.transform.localPosition = info.PlayerPosition;
+                player.transform.localRotation = info.PlayerRotation;
+            }
+            else
+            {
+                Debug.Log($"Player {info.PlayFabId} does not exist / was not added to players dictionary");
+            }
+        }
+
+        public static void CreateProjectile(ProjectileFiredMessage message)
+        {
+            var projectile = Instantiate(_projectilePrefab);
+
+            // Determine where the projective starts relative to the player
+            projectile.transform.SetPositionAndRotation(message.ProjectileStartingPosition, message.ProjectileStartingRotation);
+            projectile.GetComponent<Rigidbody>().velocity = message.ProjectileVelocity;
+
+            // Ensure projectile does not collide with player or the enemy
+            Transform shootingPlayer;
+            if (TryGetPlayer(message.PlayFabId, out shootingPlayer))
+            {
+                Physics.IgnoreCollision(projectile.GetComponent<Collider>(), shootingPlayer.GetComponent<Collider>());
+            }
+            else
+            {
+                Debug.Log("Couldn't find player that fired projectile.");
             }
         }
 

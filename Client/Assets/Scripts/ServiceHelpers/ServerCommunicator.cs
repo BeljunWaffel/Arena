@@ -15,6 +15,7 @@ namespace Assets.Scripts.ServiceHelpers
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerAddedMessage, OnPlayerAdded);
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayersAddedMessage, OnPlayersAdded);
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnPlayerInfoReceived);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.ProjectileFiredMessage, OnProjectileFiredReceived);
         }
 
         #region RECEIVING
@@ -22,14 +23,14 @@ namespace Assets.Scripts.ServiceHelpers
         private void OnPlayerAdded(NetworkMessage netMsg)
         {
             var message = netMsg.ReadMessage<PlayerInfoMessage>();
-            Debug.Log($"On Player Added {message.Internal.PlayFabId}");
+            //Debug.Log($"On Player Added {message.Internal.PlayFabId}");
             GameState.CreatePlayer(message.Internal);
         }
 
         private void OnPlayersAdded(NetworkMessage netMsg)
         {
             var messages = netMsg.ReadMessage<PlayerInfoMessages>();
-            Debug.Log($"On Players Added");
+            //Debug.Log($"On Players Added");
             foreach (PlayerInfo playerInfo in messages.Internal)
             {
                 GameState.CreatePlayer(playerInfo);
@@ -39,8 +40,15 @@ namespace Assets.Scripts.ServiceHelpers
         public void OnPlayerInfoReceived(NetworkMessage netMsg)
         {
             var message = netMsg.ReadMessage<PlayerInfoMessage>();
-            Debug.Log($"Player {message.Internal.PlayFabId} location: {message.Internal.PlayerPosition}");
+            //Debug.Log($"Player {message.Internal.PlayFabId} location: {message.Internal.PlayerPosition}");
             GameState.UpdatePlayerInfo(message.Internal);
+        }
+
+        public void OnProjectileFiredReceived(NetworkMessage netMsg)
+        {
+            var message = netMsg.ReadMessage<ProjectileFiredMessage>();
+            //Debug.Log($"Player {message.Internal.PlayFabId} location: {message.Internal.PlayerPosition}");
+            GameState.CreateProjectile(message);
         }
 
         #endregion RECEIVING
@@ -52,6 +60,12 @@ namespace Assets.Scripts.ServiceHelpers
             _unc?.Client?.connection?.Send(CustomGameServerMessageTypes.PlayerInfoMessage,
                 new PlayerInfoMessage(new PlayerInfo(playfabId, player))
             );
+        }
+
+        public void SendProjectileFired(string playfabId, Transform projectile)
+        {
+            _unc?.Client?.connection?.Send(CustomGameServerMessageTypes.ProjectileFiredMessage, 
+                new ProjectileFiredMessage(playfabId, projectile));
         }
 
         #endregion SENDING
