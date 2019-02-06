@@ -219,8 +219,9 @@ GameObject:
   - component: {fileID: 54417825248963628}
   - component: {fileID: 114734850323094788}
   - component: {fileID: 114726782469051600}
-  - component: {fileID: 114538630719342554}
   - component: {fileID: 114695391402404906}
+  - component: {fileID: 114134484427366878}
+  - component: {fileID: 114538630719342554}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -757,6 +758,19 @@ AudioListener:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1609572430907254}
   m_Enabled: 1
+--- !u!114 &114134484427366878
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1870744234704080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57b777e91530d034bb23be6b70e44aca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _serverCommunicator: {fileID: 114443913673217160, guid: 86559d13d18c9a841b69063065afaafc,
+    type: 2}
 --- !u!114 &114219397047276308
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -864,8 +878,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfae2f13cd00a054e939613e32d22c58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _startingHealth: 5
+  StartingHealth: 5
   _healthBar: {fileID: 114584894004513464}
+  _serverCommunicator: {fileID: 114443913673217160, guid: 86559d13d18c9a841b69063065afaafc,
+    type: 2}
   _damageImage: {fileID: 0}
   _flashSpeed: 2
   _flashColour: {r: 1, g: 0, b: 0, a: 0.19607843}

@@ -316,6 +316,8 @@ namespace PlayFab.AgentModels
         public Vector3 PlayerPosition;
 
         public Quaternion PlayerRotation;
+
+        public int Health;
         
         public BackendPlayerInfo(PlayerInfo playerInfo)
         {
@@ -327,6 +329,7 @@ namespace PlayFab.AgentModels
             PlayerId = playerInfo.PlayFabId;
             PlayerPosition = playerInfo.PlayerPosition;
             PlayerRotation = playerInfo.PlayerRotation;
+            Health = playerInfo.Health;
         }
     }
 

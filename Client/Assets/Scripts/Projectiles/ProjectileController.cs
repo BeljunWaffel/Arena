@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.PlayerScripts;
+using Assets.Scripts.SharedScripts;
 using Assets.Scripts.Utils;
 using System.Diagnostics;
 using UnityEngine;
@@ -31,15 +32,11 @@ namespace Assets.Scripts.Projectiles
                 return;
             }
 
+            // Player will report when they get hit.
             if (TagList.ContainsTag(collision.gameObject, Tag.Player))
             {
-                UnityEngine.Debug.Log("Projectile hit other player");
-                collision.gameObject.GetComponent<PlayerHealth>().TakeDamage(1);
-                Destroy(gameObject);
-            }
-            else
-            {
-                //UnityEngine.Debug.Log("Projectile hit a non-player");
+                UnityEngine.Debug.Log("Projectile hit player");
+                collision.gameObject.GetComponent<HealthControllerBase>().TakeDamage(1);
             }
 
             Destroy(gameObject);

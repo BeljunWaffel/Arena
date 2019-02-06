@@ -1,4 +1,5 @@
 ﻿using PlayFab;
+using PlayFab.AgentModels;
 using PlayFab.Networking;
 using System;
 using System.Collections;
@@ -27,12 +28,13 @@ public class AgentListener : MonoBehaviour {
         UNetServer.OnPlayerInfoReceived.AddListener(OnPlayerInfoReceived);
         UNetServer.OnProjectileFiredReceived.AddListener(OnProjectileFired);
         UNetServer.OnPlayerRemoved.AddListener(OnPlayerRemoved);
+        UNetServer.OnPlayerDeadReceived.AddListener(OnPlayerDead);
 
         StartCoroutine(ReadyForPlayers());
 
-        //// Debugging
+        // Debugging
         //_curr = new Vector3(2.5f, 0.5f, 2.5f);
-        //var message = new PlayerInfoMessage(new PlayerInfo("1234", _curr, Quaternion.identity));
+        //var message = new PlayerInfoMessage(new PlayerInfo { "1234", _curr, Quaternion.identity } ));
         //OnPlayerAdded(message);
 
         //_curr = new Vector3(2.5f, 0.5f, 5f);
@@ -41,29 +43,38 @@ public class AgentListener : MonoBehaviour {
     }
 
     // FOR DEBUGGING AND SENDING FAKE EVENTS
-    
-    //private void Update()
-    //{
-    //    _timer += Time.deltaTime;
-    //    _timer2 += Time.deltaTime;
-    //    var jump = Input.GetAxis("Jump");
-    //    if (jump != 0 && _timer > 5f)
-    //    {
-    //        _timer = 0f;
-    //        Debug.Log("Sending player added message");
-    //        _curr = new Vector3(2.5f, 0.5f, 2.5f);
-    //        var message = new PlayerInfoMessage(new PlayerInfo("1234", _curr, Quaternion.identity));
-    //        OnPlayerAdded(message);
-    //        _wasAdded = true;
-    //    }
 
-    //    if (_wasAdded && _timer2 > 1f)
-    //    {
-    //        _timer2 = 0f;
-    //        var info = new PlayerInfo("1234", _curr += new Vector3(.3f, 0f, 0f), Quaternion.identity);
-    //        SendEventToOtherClients(CustomGameServerMessageTypes.PlayerInfoMessage, new PlayerInfoMessage(info));
-    //    }
-    //}
+    private void Update()
+    {
+        _timer += Time.deltaTime;
+        _timer2 += Time.deltaTime;
+        var jump = Input.GetAxis("Jump");
+        if (jump != 0 && _timer > 5f)
+        {
+            _timer = 0f;
+            Debug.Log("Sending player added message");
+            _curr = new Vector3(2.5f, 0.5f, 2.5f);
+
+            var playerInfo = new PlayerInfo()
+            {
+                PlayFabId = "1234",
+                PlayerPosition = new Vector3(2, .5f, 2),
+                PlayerRotation = Quaternion.identity,
+                Health = 5
+            };
+
+            var message = new PlayerInfoMessage(playerInfo);
+            OnPlayerAdded(message);
+            _wasAdded = true;
+        }
+
+        //if (_wasAdded && _timer2 > 1f)
+        //{
+        //    _timer2 = 0f;
+        //    var info = new PlayerInfo("1234", _curr += new Vector3(.3f, 0f, 0f), Quaternion.identity);
+        //    SendEventToOtherClients(CustomGameServerMessageTypes.PlayerInfoMessage, new PlayerInfoMessage(info));
+        //}
+    }
 
     IEnumerator ReadyForPlayers()
     {
@@ -80,6 +91,15 @@ public class AgentListener : MonoBehaviour {
     private void OnPlayerRemoved(string playfabId)
     {
         PlayFabMultiplayerAgentAPI.RemovePlayer(playfabId);
+    }
+
+    private void OnPlayerDead(string playFabId)
+    {
+        Debug.Log($"player {playFabId} dead");
+        if (PlayFabMultiplayerAgentAPI.Players.ContainsKey(playFabId))
+        {
+            SendEventToOtherClients(CustomGameServerMessageTypes.PlayerDeadMessage, new PlayerIdMessage(playFabId), ignoreId: playFabId);
+        }
     }
 
     private void OnPlayerAdded(PlayerInfoMessage message)

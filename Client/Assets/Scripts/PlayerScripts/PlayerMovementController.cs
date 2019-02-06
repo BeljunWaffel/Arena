@@ -26,13 +26,6 @@ namespace Assets.Scripts.PlayerScripts
         {
             _playerMetadata = GetComponent<PlayerMetadata>();
             _player = GetComponent<Rigidbody>();
-            
-            var unc = UnityNetworkingClient.Instance;
-        }
-
-        private void Update()
-        {
-            _serverCommunicator.SendPlayerInfo(_playerMetadata.PlayFabId, transform);
         }
 
         // Applied before physics

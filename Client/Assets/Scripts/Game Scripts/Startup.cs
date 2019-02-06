@@ -69,8 +69,13 @@ namespace Assets.Scripts.Game_Scripts
             _messageWindow.Message.text = string.Format("You logged in successfully. ID:{0}", success.PlayFabId);
             _messageWindow.gameObject.SetActive(true);
 
+            // Set current player id
             CurrentPlayerMetadata.PlayFabId = success.PlayFabId;
 
+            // Add player to gamestate
+            GameState.AddCurrentPlayerInfo(success.PlayFabId, CurrentPlayerMetadata.transform);
+
+            // Inform server of player being added
             var playerInfoInternal = new PlayerInfo(success.PlayFabId, CurrentPlayerMetadata.transform);
             _unc.Client.connection.Send(CustomGameServerMessageTypes.ReceiveAuthenticate, new PlayerInfoMessage(playerInfoInternal));
         }

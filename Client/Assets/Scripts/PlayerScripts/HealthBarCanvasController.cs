@@ -13,7 +13,7 @@ namespace Assets.Scripts.PlayerScripts
         {
             if (!_targetObject)
             {
-                Debug.Log("No Target Object has been set for the player camera");
+                Debug.Log("No Target Object has been set for the player health bar canvas");
                 return;
             }
 

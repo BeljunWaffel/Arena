@@ -12,6 +12,7 @@
     {
         public PlayerInfoEvent OnPlayerAdded = new PlayerInfoEvent();
         public PlayerEvent OnPlayerRemoved = new PlayerEvent();
+        public PlayerEvent OnPlayerDeadReceived = new PlayerEvent();
         public PlayerInfoEvent OnPlayerInfoReceived = new PlayerInfoEvent();
         public ProjectileInfoEvent OnProjectileFiredReceived = new ProjectileInfoEvent();
 
@@ -28,8 +29,8 @@
 
         public class PlayerEvent : UnityEvent<string> { }
 
-        public class PlayerInfoEvent : UnityEvent<PlayerInfoMessage> { }     
-        
+        public class PlayerInfoEvent : UnityEvent<PlayerInfoMessage> { }   
+                
         public class ProjectileInfoEvent : UnityEvent<ProjectileFiredMessage> { }        
 
         // Use this for initialization
@@ -42,6 +43,7 @@
             NetworkServer.RegisterHandler(CustomGameServerMessageTypes.ReceiveAuthenticate, OnReceiveAuthenticate);
             NetworkServer.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnReceivePlayerInfo);
             NetworkServer.RegisterHandler(CustomGameServerMessageTypes.ProjectileFiredMessage, OnProjectileFired);
+            NetworkServer.RegisterHandler(CustomGameServerMessageTypes.PlayerDeadMessage, OnPlayerDead);
             _netManager.networkPort = Port;
         }
 
@@ -84,6 +86,15 @@
             {
                 var message = netMsg.ReadMessage<ProjectileFiredMessage>();
                 OnProjectileFiredReceived.Invoke(message);
+            }
+        }
+
+        private void OnPlayerDead(NetworkMessage netMsg)
+        {
+            var conn = _connections.Find(c => c.ConnectionId == netMsg.conn.connectionId);
+            if (conn != null)
+            {
+                OnPlayerDeadReceived.Invoke(conn.PlayFabId);
             }
         }
 
@@ -156,6 +167,7 @@
         public const short PlayersAddedMessage = 1000;
         public const short PlayerInfoMessage = 1001;
         public const short ProjectileFiredMessage = 1002;
+        public const short PlayerDeadMessage = 1003;
     }
 
     [Serializable]
@@ -183,6 +195,19 @@
         }
     }
 
+    [Serializable]
+    public class PlayerIdMessage : MessageBase
+    {
+        public string PlayFabId;
+
+        public PlayerIdMessage() { }
+
+        public PlayerIdMessage(string playFabId)
+        {
+            PlayFabId = playFabId;
+        }
+    }
+
     public struct PlayerInfo
     {
         public string PlayFabId;
@@ -191,18 +216,14 @@
 
         public Quaternion PlayerRotation;
 
-        public PlayerInfo(string playFabId, Vector3 playerPos, Quaternion playerRot)
-        {
-            PlayFabId = playFabId;
-            PlayerPosition = playerPos;
-            PlayerRotation = playerRot;
-        }
+        public int Health;
 
         public PlayerInfo(BackendPlayerInfo player)
         {
             PlayFabId = player.PlayerId;
             PlayerPosition = player.PlayerPosition;
             PlayerRotation = player.PlayerRotation;
+            Health = player.Health;
         }
     }
 

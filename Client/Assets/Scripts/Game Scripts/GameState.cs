@@ -1,5 +1,7 @@
 ﻿using Assets.Scripts.PlayerScripts;
 using Assets.Scripts.Projectiles;
+using Assets.Scripts.ServiceHelpers;
+using Assets.Scripts.SharedScripts;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,12 +22,16 @@ namespace Assets.Scripts.Game_Scripts
         private static Transform _enemyPrefab;
         private static Transform _projectilePrefab;
 
+        private static ServerCommunicator _serverCommunicator;
+
         private void Awake()
         {
             _players = new Dictionary<string, Transform>();
             _enemiesContainer = EnemiesContainerBacking;
             _enemyPrefab = EnemyPrefabBacking;
             _projectilePrefab = ProjectilePrefabBacking;
+
+            _serverCommunicator = GetComponent<ServerCommunicator>();
 
             if (_enemiesContainer == null)
             {
@@ -43,9 +49,9 @@ namespace Assets.Scripts.Game_Scripts
             _messageWindow = MessageWindow.Instance;
         }
 
-        private static bool TryGetPlayer(string playerId, out Transform player)
+        public static void AddCurrentPlayerInfo(string playFabId, Transform currentPlayer)
         {
-            return _players.TryGetValue(playerId, out player);
+            _players.Add(playFabId, currentPlayer);
         }
 
         public static void CreatePlayer(PlayerInfo playerInfo)
@@ -62,7 +68,7 @@ namespace Assets.Scripts.Game_Scripts
             enemyContainer.gameObject.SetActive(true);
             enemyContainer.name = $"enemy{playerInfo.PlayFabId}";
             enemyContainer.localPosition = Vector3.zero;
-            enemyContainer.localRotation = Quaternion.identity;
+            enemyContainer.localRotation = Quaternion.identity;                      
 
             // Set enemy playfabId + pos/rot
             for (int i = 0; i < enemyContainer.childCount; i++)
@@ -75,6 +81,10 @@ namespace Assets.Scripts.Game_Scripts
                     child.localPosition = playerInfo.PlayerPosition;
                     child.localRotation = playerInfo.PlayerRotation;
                     _players[playFabId] = child;
+                    
+                    var enemyHealth = child.GetComponent<HealthControllerBase>();
+                    enemyHealth.StartingHealth = playerInfo.Health;
+                    enemyHealth.SetCurrentHealth(playerInfo.Health);
                     break;
                 }
             }
@@ -82,16 +92,27 @@ namespace Assets.Scripts.Game_Scripts
 
         public static void RemovePlayer(string playFabId)
         {
-            _players.Remove(playFabId);
+            Transform player;
+            if (_players.TryGetValue(playFabId, out player))
+            {
+                _serverCommunicator.SendPlayerDead(playFabId);
+                Destroy(player.parent.gameObject);
+                _players.Remove(playFabId);
+            }
+            else
+            {
+                Debug.Log($"Player {playFabId} has already been removed.");
+            }
         }
 
         public static void UpdatePlayerInfo(PlayerInfo info)
         {
             Transform player;
-            if (TryGetPlayer(info.PlayFabId, out player))
+            if (_players.TryGetValue(info.PlayFabId, out player))
             {
                 player.transform.localPosition = info.PlayerPosition;
                 player.transform.localRotation = info.PlayerRotation;
+                player.GetComponent<HealthControllerBase>().SetCurrentHealth(info.Health);
             }
             else
             {
@@ -109,7 +130,7 @@ namespace Assets.Scripts.Game_Scripts
 
             // Ensure projectile does not collide with player or the enemy
             Transform shootingPlayer;
-            if (TryGetPlayer(message.PlayFabId, out shootingPlayer))
+            if (_players.TryGetValue(message.PlayFabId, out shootingPlayer))
             {
                 Physics.IgnoreCollision(projectile.GetComponent<Collider>(), shootingPlayer.GetComponent<Collider>());
             }

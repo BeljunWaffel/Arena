@@ -1,60 +1,36 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.SharedScripts;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts.PlayerScripts
 {
-    public class PlayerHealth : MonoBehaviour
+    public class PlayerHealth : HealthControllerBase
     {
-        [SerializeField] private int _startingHealth;
-        private int _currentHealth;
-        [SerializeField] private Image _healthBar;
         [SerializeField] private Image _damageImage;
         [SerializeField] private float _flashSpeed = 5f;
         [SerializeField] private Color _flashColour = new Color(1f, 0f, 0f, 0.1f);
 
-        private bool _isDead;
         private bool _justGotDamaged;
 
-        void Awake()
-        {
-            _currentHealth = _startingHealth;
-            _isDead = false;
-        }
-
-        void Update()
+        protected override void Update()
         {
             //if (s.ElapsedMilliseconds > 2500 && _currentHealth > 1)
             //{
             //    TakeDamage(1);
             //    s.Restart();
             //}
+            base.Update();
 
-            if (_justGotDamaged)
-            {
-                _damageImage.color = _flashColour;
-            }
-            else
-            {
-                _damageImage.color = Color.Lerp(_damageImage.color, Color.clear, _flashSpeed * Time.deltaTime);
-            }
+            _damageImage.color = _justGotDamaged ? _flashColour : 
+                Color.Lerp(_damageImage.color, Color.clear, _flashSpeed * Time.deltaTime);
 
             _justGotDamaged = false;
         }
 
-        public void TakeDamage(int amount)
+        public override void TakeDamage(int amount)
         {
             _justGotDamaged = true;
-
-            _currentHealth -= amount;
-            _healthBar.fillAmount = _currentHealth / (1.0f * _startingHealth);
-
-            if (_currentHealth <= 0 && !_isDead)
-            {
-                _isDead = true;
-
-                Debug.Log("Player dead");
-                Destroy(gameObject);
-            }
+            base.TakeDamage(amount);
         }
     }
 }

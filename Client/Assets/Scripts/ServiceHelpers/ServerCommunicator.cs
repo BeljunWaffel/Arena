@@ -16,6 +16,7 @@ namespace Assets.Scripts.ServiceHelpers
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayersAddedMessage, OnPlayersAdded);
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnPlayerInfoReceived);
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.ProjectileFiredMessage, OnProjectileFiredReceived);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerDeadMessage, OnPlayerDeadReceived);
         }
 
         #region RECEIVING
@@ -51,6 +52,13 @@ namespace Assets.Scripts.ServiceHelpers
             GameState.CreateProjectile(message);
         }
 
+        public void OnPlayerDeadReceived(NetworkMessage netMsg)
+        {
+            var message = netMsg.ReadMessage<PlayerIdMessage>();
+            Debug.Log($"Player {message.PlayFabId} dead message received.");
+            GameState.RemovePlayer(message.PlayFabId);
+        }
+
         #endregion RECEIVING
 
         #region SENDING
@@ -66,6 +74,11 @@ namespace Assets.Scripts.ServiceHelpers
         {
             _unc?.Client?.connection?.Send(CustomGameServerMessageTypes.ProjectileFiredMessage, 
                 new ProjectileFiredMessage(playfabId, projectile));
+        }
+
+        public void SendPlayerDead(string playfabId)
+        {
+            _unc?.Client?.connection?.Send(CustomGameServerMessageTypes.PlayerDeadMessage, new PlayerIdMessage(playfabId));
         }
 
         #endregion SENDING

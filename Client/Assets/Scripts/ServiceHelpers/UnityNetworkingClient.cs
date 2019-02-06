@@ -1,4 +1,5 @@
-﻿using PlayFab;
+﻿using Assets.Scripts.PlayerScripts;
+using PlayFab;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -73,6 +74,7 @@ namespace Assets.Scripts.ServiceHelpers
             public const short PlayersAddedMessage = 1000;
             public const short PlayerInfoMessage = 1001;
             public const short ProjectileFiredMessage = 1002;
+            public const short PlayerDeadMessage = 1003;
         }
 
         public class PlayerInfoMessages : MessageBase
@@ -99,6 +101,19 @@ namespace Assets.Scripts.ServiceHelpers
             }
         }
 
+        [Serializable]
+        public class PlayerIdMessage : MessageBase
+        {
+            public string PlayFabId;
+
+            public PlayerIdMessage() { }
+
+            public PlayerIdMessage(string playFabId)
+            {
+                PlayFabId = playFabId;
+            }
+        }
+
         public struct PlayerInfo
         {
             public string PlayFabId;
@@ -107,18 +122,16 @@ namespace Assets.Scripts.ServiceHelpers
 
             public Quaternion PlayerRotation;
 
-            public PlayerInfo(string playFabId, Vector3 playerPos, Quaternion playerRot)
-            {
-                PlayFabId = playFabId;
-                PlayerPosition = playerPos;
-                PlayerRotation = playerRot;
-            }
+            public int Health;
 
             public PlayerInfo(string playFabId, Transform player)
             {
                 PlayFabId = playFabId;
                 PlayerPosition = player.localPosition;
                 PlayerRotation = player.localRotation;
+
+                var health = player.GetComponent<PlayerHealth>();
+                Health = health.CurrentHealth;
             }
         }
 
