@@ -42,7 +42,7 @@ namespace Assets.Scripts.SharedScripts
                 // Ensure we send one last event before we declare player dead
                 var playerId = transform.GetComponent<PlayerMetadata>().PlayFabId;
                 Debug.Log($"Player {playerId} dead.");
-                GameState.RemovePlayer(playerId);
+                GameState.KillPlayer(playerId, notifyServer: true);
             }
         }
 

@@ -75,6 +75,7 @@ namespace Assets.Scripts.ServiceHelpers
             public const short PlayerInfoMessage = 1001;
             public const short ProjectileFiredMessage = 1002;
             public const short PlayerDeadMessage = 1003;
+            public const short PlayerRespawnMessage = 1004;
         }
 
         public class PlayerInfoMessages : MessageBase

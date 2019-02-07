@@ -17,6 +17,7 @@ namespace Assets.Scripts.ServiceHelpers
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerInfoMessage, OnPlayerInfoReceived);
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.ProjectileFiredMessage, OnProjectileFiredReceived);
             _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerDeadMessage, OnPlayerDeadReceived);
+            _unc.Client.RegisterHandler(CustomGameServerMessageTypes.PlayerRespawnMessage, OnPlayerRespawnedReceived);
         }
 
         #region RECEIVING
@@ -56,7 +57,14 @@ namespace Assets.Scripts.ServiceHelpers
         {
             var message = netMsg.ReadMessage<PlayerIdMessage>();
             Debug.Log($"Player {message.PlayFabId} dead message received.");
-            GameState.RemovePlayer(message.PlayFabId);
+            GameState.KillPlayer(message.PlayFabId, notifyServer: false);
+        }
+
+        public void OnPlayerRespawnedReceived(NetworkMessage netMsg)
+        {
+            var message = netMsg.ReadMessage<PlayerInfoMessage>();
+            Debug.Log($"Player {message.Internal.PlayFabId} respawned message received.");
+            GameState.RespawnPlayer(message.Internal);
         }
 
         #endregion RECEIVING

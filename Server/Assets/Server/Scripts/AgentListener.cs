@@ -1,4 +1,5 @@
-﻿using PlayFab;
+﻿using Assets.Server.Scripts;
+using PlayFab;
 using PlayFab.AgentModels;
 using PlayFab.Networking;
 using System;
@@ -44,37 +45,37 @@ public class AgentListener : MonoBehaviour {
 
     // FOR DEBUGGING AND SENDING FAKE EVENTS
 
-    private void Update()
-    {
-        _timer += Time.deltaTime;
-        _timer2 += Time.deltaTime;
-        var jump = Input.GetAxis("Jump");
-        if (jump != 0 && _timer > 5f)
-        {
-            _timer = 0f;
-            Debug.Log("Sending player added message");
-            _curr = new Vector3(2.5f, 0.5f, 2.5f);
+    //private void Update()
+    //{
+    //    _timer += Time.deltaTime;
+    //    _timer2 += Time.deltaTime;
+    //    var jump = Input.GetAxis("Jump");
+    //    if (jump != 0 && _timer > 5f)
+    //    {
+    //        _timer = 0f;
+    //        Debug.Log("Sending player added message");
+    //        _curr = new Vector3(2.5f, 0.5f, 2.5f);
 
-            var playerInfo = new PlayerInfo()
-            {
-                PlayFabId = "1234",
-                PlayerPosition = new Vector3(2, .5f, 2),
-                PlayerRotation = Quaternion.identity,
-                Health = 5
-            };
+    //        var playerInfo = new PlayerInfo()
+    //        {
+    //            PlayFabId = "1234",
+    //            PlayerPosition = new Vector3(2, .5f, 2),
+    //            PlayerRotation = Quaternion.identity,
+    //            Health = 5
+    //        };
 
-            var message = new PlayerInfoMessage(playerInfo);
-            OnPlayerAdded(message);
-            _wasAdded = true;
-        }
+    //        var message = new PlayerInfoMessage(playerInfo);
+    //        OnPlayerAdded(message);
+    //        _wasAdded = true;
+    //    }
 
-        //if (_wasAdded && _timer2 > 1f)
-        //{
-        //    _timer2 = 0f;
-        //    var info = new PlayerInfo("1234", _curr += new Vector3(.3f, 0f, 0f), Quaternion.identity);
-        //    SendEventToOtherClients(CustomGameServerMessageTypes.PlayerInfoMessage, new PlayerInfoMessage(info));
-        //}
-    }
+    //    //if (_wasAdded && _timer2 > 1f)
+    //    //{
+    //    //    _timer2 = 0f;
+    //    //    var info = new PlayerInfo("1234", _curr += new Vector3(.3f, 0f, 0f), Quaternion.identity);
+    //    //    SendEventToOtherClients(CustomGameServerMessageTypes.PlayerInfoMessage, new PlayerInfoMessage(info));
+    //    //}
+    //}
 
     IEnumerator ReadyForPlayers()
     {
@@ -100,6 +101,32 @@ public class AgentListener : MonoBehaviour {
         {
             SendEventToOtherClients(CustomGameServerMessageTypes.PlayerDeadMessage, new PlayerIdMessage(playFabId), ignoreId: playFabId);
         }
+
+        PlayerInfo respawnInfo = new PlayerInfo()
+        {
+            PlayFabId = playFabId,
+            PlayerPosition = new Vector3(-2, .5f, -2),
+            PlayerRotation = Quaternion.identity,
+            Health = 5
+        };
+        TimedEvent te = new TimedEvent(5f, CustomGameServerMessageTypes.PlayerRespawnMessage, new PlayerInfoMessage(respawnInfo));
+        GetComponent<TimedEventController>().TimedEvents.Add(te);
+        //System.Diagnostics.Stopwatch respawnTimer = new System.Diagnostics.Stopwatch();
+        //respawnTimer.Start();
+        //Debug.Log($"RespawnTimer 1: {respawnTimer.ElapsedMilliseconds}");
+        //while (respawnTimer.ElapsedMilliseconds < 5f)
+        //{
+        //}
+
+        //Debug.Log($"RespawnTimer 2: {respawnTimer.ElapsedMilliseconds}");
+        //PlayerInfo respawnInfo = new PlayerInfo()
+        //{
+        //    PlayFabId = playFabId,
+        //    PlayerPosition = new Vector3(-2, .5f, -2),
+        //    PlayerRotation = Quaternion.identity,
+        //    Health = 5
+        //};
+        //SendEventToOtherClients(CustomGameServerMessageTypes.PlayerRespawnMessage, new PlayerInfoMessage(respawnInfo));
     }
 
     private void OnPlayerAdded(PlayerInfoMessage message)
@@ -152,7 +179,7 @@ public class AgentListener : MonoBehaviour {
         }
     }
 
-    private void SendEventToOtherClients(short messageType, MessageBase message, string ignoreId = "")
+    public void SendEventToOtherClients(short messageType, MessageBase message, string ignoreId = "")
     {
         foreach (var conn in UNetServer.Connections)
         {

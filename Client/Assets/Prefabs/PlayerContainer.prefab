@@ -880,8 +880,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StartingHealth: 5
   _healthBar: {fileID: 114584894004513464}
-  _serverCommunicator: {fileID: 114443913673217160, guid: 86559d13d18c9a841b69063065afaafc,
-    type: 2}
   _damageImage: {fileID: 0}
   _flashSpeed: 2
   _flashColour: {r: 1, g: 0, b: 0, a: 0.19607843}
